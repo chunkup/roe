@@ -1,0 +1,7 @@
+{
+  "name": "Roe",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
