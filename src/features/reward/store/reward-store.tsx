@@ -4,14 +4,14 @@ import { nanoid } from "nanoid";
 
 export interface Reward {
     id: string;
-    dreamId: string;
+    dreamId?: string;
     title: string;
-    description: string;
+    description?: string;
     price: number;
     bought: boolean;
 }
 
-export type RewardEditable = Pick<Reward, "dreamId" | "title" | "description" | "price">;
+export type RewardEditable = Pick<Reward, "title" | "price"> & Partial<Pick<Reward, "dreamId" | "description">>;
 
 export interface RewardStoreSlice {
     rewardSlice: {
