@@ -1,14 +1,23 @@
-import { IonItem, IonLabel, IonList } from '@ionic/react';
+import { IonCheckbox, IonItem, IonLabel, IonList } from '@ionic/react';
 import HomeScreen from '../../components/HomeScreen';
 import { useStore } from '../../store';
 import { TaskIterationImportanceEnum } from './store/task-iteration-importance-enum';
 
-const TaskList = () => {
+const TaskIterationsList = () => {
     const tasks = useStore((state) => state.taskSlice.tasks);
+    const taskIterations = useStore((state) => state.taskIterationSlice.taskIterations);
+    const toggleTaskIteration = useStore((state) => state.taskIterationSlice.toggle);
+
+    console.log(tasks.length, taskIterations.length);
 
     return (
         <IonList>
-            { tasks.map((task, index) => <IonItem key={task.id}><IonLabel>{task.title} {index}</IonLabel></IonItem>) }
+            { taskIterations.map((taskIteration, index) =>
+                <IonItem key={taskIteration.id}>
+                    <IonCheckbox slot="start" checked={taskIteration.completed} onClick={() => toggleTaskIteration(taskIteration.id)}></IonCheckbox>
+                    <IonLabel>{tasks.find(task => task.id === taskIteration.taskId)?.title} {index}</IonLabel>
+                </IonItem>
+            ) }
         </IonList>
     )
 };
@@ -28,7 +37,7 @@ const TasksScreen: React.FC = () => {
     }
 
     return (
-        <HomeScreen id="tasks-screen" title="Tasks" list={<TaskList />} fabClick={fabOnClick} />
+        <HomeScreen id="tasks-screen" title="Tasks" list={<TaskIterationsList />} fabOnClick={fabOnClick} />
     );
 };
 

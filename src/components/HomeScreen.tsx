@@ -16,10 +16,10 @@ interface HomeScreenProps {
     id: string,
     title: string
     list?: any
-    fabClick?: () => void
+    fabOnClick?: () => void
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ id, title, list, fabClick }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ id, title, list, fabOnClick: fabClick }) => {
     return (
         <IonPage id={id}>
             <IonHeader>

@@ -33,10 +33,10 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
     taskSlice: {
         tasks: [],
 
-        add: (taskEditable, taskIterationEditable) =>
-            set((state) => {
-                const taskId = nanoid()
+        add: (taskEditable, taskIterationEditable) => {
+            const taskId = nanoid()
 
+            set((state) => {
                 state.taskSlice.tasks.push({
                     id: taskId,
                     dreamId: taskEditable.dreamId,
@@ -46,13 +46,14 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
                     repeatTimes: taskEditable.repeatTimes ?? 1,
                     completedTimes: 0,
                 })
+            })
 
-                state.taskIterationSlice.add({
-                    taskId: taskId,
-                    date: taskIterationEditable.date,
-                    importance: taskIterationEditable.importance,
-                })
-            }),
+            get().taskIterationSlice.add({
+                taskId: taskId,
+                date: taskIterationEditable.date,
+                importance: taskIterationEditable.importance,
+            })
+        },
 
         remove: (taskId) =>
             set((state) => {

@@ -40,7 +40,7 @@ export const createTaskIterationStoreSlice: StateCreator<
     Mutators,
     [],
     TaskIterationStoreSlice
-> = (set) => ({
+> = (set, get) => ({
     taskIterationSlice: {
         taskIterations: [],
 
@@ -79,40 +79,38 @@ export const createTaskIterationStoreSlice: StateCreator<
                 taskIteration.importance = taskIterationEditable.importance ?? taskIteration.importance;
             }),
 
-        toggle: (taskIterationId) =>
-            set((state) => {
-                const taskIteration = state.taskIterationSlice.taskIterations.find(
-                    (taskIteration) => taskIteration.id === taskIterationId,
-                );
-                if (!taskIteration) {
-                    throw new Error(`TaskIteration with id ${taskIterationId} not found`);
-                }
+        toggle: (taskIterationId) => {
+            const taskIteration = get().taskIterationSlice.taskIterations.find(
+                (taskIteration) => taskIteration.id === taskIterationId,
+            );
+            if (!taskIteration) {
+                throw new Error(`TaskIteration with id ${taskIterationId} not found`);
+            }
 
+            const task = get().taskSlice.tasks.find((task) => task.id === taskIteration.taskId);
+            if (!task) {
+                throw new Error(`Task with id ${taskIteration.taskId} not found`);
+            }
+
+            set(() => {
                 taskIteration.completed = !taskIteration.completed;
                 taskIteration.completedDate = taskIteration.completed ? new Date() : undefined;
 
-                const task = state.taskSlice.tasks.find((task) => task.id === taskIteration.taskId);
-
-                if (!task) {
-                    throw new Error(`Task with id ${taskIteration.taskId} not found`);
-                }
-
                 task.completedTimes += taskIteration.completed ? 1 : -1;
+            });
 
-                const completed = state.taskSlice.completed(taskIteration.taskId);
+            if (task.dreamId) {
+                get().dreamSlice.tryComplete(task.dreamId);
+            }
 
-                if (task.dreamId) {
-                    state.dreamSlice.tryComplete(task.dreamId);
-                }
-
-                if (!completed && taskIteration.date) {
-                    state.taskIterationSlice.add({
-                        taskId: task.id,
-                        date: getNextTaskIterationDate(taskIteration.date, task.repeatKind),
-                        importance: taskIteration.importance,
-                    });
-                }
-            }),
+            if (!get().taskSlice.completed(taskIteration.taskId) && taskIteration.date) {
+                get().taskIterationSlice.add({
+                    taskId: task.id,
+                    date: getNextTaskIterationDate(taskIteration.date, task.repeatKind),
+                    importance: taskIteration.importance,
+                });
+            }
+        },
     },
 });
 
