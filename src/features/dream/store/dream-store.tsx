@@ -64,7 +64,7 @@ export const createDreamStoreSlice: StateCreator<Store, Mutators, [], DreamStore
 
                 const tasks = state.taskSlice.tasks.filter(task => task.dreamId === dreamId);
                 const rewards = state.rewardSlice.rewards.filter(reward => reward.dreamId === dreamId);
-                const completed = tasks.every(task => state.taskSlice.completed(task.id));
+                const completed = tasks.every(task => task.completed);
 
                 dream.completed = completed;
                 rewards.forEach(reward => state.rewardSlice.toggle(reward.id, completed));

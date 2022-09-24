@@ -92,18 +92,22 @@ export const createTaskIterationStoreSlice: StateCreator<
                 throw new Error(`Task with id ${taskIteration.taskId} not found`);
             }
 
-            set(() => {
+            set((state) => {
+                const taskIteration = state.taskIterationSlice.taskIterations.find((taskIteration) => taskIteration.id === taskIterationId)!;
+                const task = state.taskSlice.tasks.find((task) => task.id === taskIteration.taskId)!;
+
                 taskIteration.completed = !taskIteration.completed;
                 taskIteration.completedDate = taskIteration.completed ? new Date() : undefined;
 
                 task.completedTimes += taskIteration.completed ? 1 : -1;
+                task.completed = task.completedTimes === task.repeatTimes;
             });
 
             if (task.dreamId) {
                 get().dreamSlice.tryComplete(task.dreamId);
             }
 
-            if (!get().taskSlice.completed(taskIteration.taskId) && taskIteration.date) {
+            if (!task.completed && taskIteration.date) {
                 get().taskIterationSlice.add({
                     taskId: task.id,
                     date: getNextTaskIterationDate(taskIteration.date, task.repeatKind),

@@ -12,6 +12,7 @@ export interface Task {
     repeatKind: TaskRepeatKindEnum
     repeatTimes: number
     completedTimes: number
+    completed: boolean
 }
 
 export type TaskEditable = Pick<Task, 'dreamId' | 'title' | 'description'> & Partial<Pick<Task, 'repeatKind' | 'repeatTimes'>>
@@ -22,7 +23,6 @@ export interface TaskStoreSlice {
         add: (taskEditable: TaskEditable, taskIterationEditable: Omit<TaskIterationEditable, "taskId">) => void
         remove: (taskId: string) => void
         update: (taskId: string, taskEditable: TaskEditable) => void
-        completed: (taskId: string) => boolean
     }
 }
 
@@ -45,6 +45,7 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
                     repeatKind: taskEditable.repeatKind ?? TaskRepeatKindEnum.None,
                     repeatTimes: taskEditable.repeatTimes ?? 1,
                     completedTimes: 0,
+                    completed: false
                 })
             })
 
@@ -72,17 +73,6 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
                 task.description = taskEditable.description ?? task.description
                 task.repeatKind = taskEditable.repeatKind ?? task.repeatKind
                 task.repeatTimes = taskEditable.repeatTimes ?? task.repeatTimes
-            }),
-
-        // TODO: Think about this
-        completed: (taskId) => {
-            const task = get().taskSlice.tasks.find((task) => task.id === taskId)
-
-            if (!task) {
-                throw new Error(`Task with id ${taskId} not found`)
-            }
-
-            return task.completedTimes === task.repeatTimes
-        },
+            })
     },
 })

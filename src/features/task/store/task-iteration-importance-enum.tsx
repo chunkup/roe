@@ -43,3 +43,18 @@ export function importanceToArray(): TaskIterationImportanceEnum[] {
     TaskIterationImportanceEnum.Low,
   ];
 }
+
+export function importanceToColor(importance: TaskIterationImportanceEnum): string | undefined {
+  switch (importance) {
+    case TaskIterationImportanceEnum.High:
+      return "danger";
+    case TaskIterationImportanceEnum.Medium:
+      return "warning";
+    case TaskIterationImportanceEnum.Ordinary:
+      return "primary";
+    case TaskIterationImportanceEnum.Low:
+      return undefined;
+    default:
+      throw new Error(`Unknown task iteration importance enum value: ${importance}`);
+  }
+}
