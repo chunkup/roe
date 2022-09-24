@@ -22,15 +22,38 @@ import '@ionic/react/css/display.css';
 import './theme/variables.css';
 
 import Navigation from './Navigation';
+import { setupStorage } from './storage';
+import { setupStore } from './store';
+import { useEffect, useState } from 'react';
+
+async function setup() {
+  await setupStorage();
+  await setupStore();
+
+  return true;
+}
 
 setupIonicReact();
 
-const App: React.FC = () => (
-  <IonApp>
-    <IonReactRouter>
-      <Navigation />
-    </IonReactRouter>
-  </IonApp>
-);
+const App: React.FC = () => {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setup()
+      .then(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return null;
+  }
+
+  return (
+    <IonApp>
+      <IonReactRouter>
+        <Navigation />
+      </IonReactRouter>
+    </IonApp>
+  );
+};
 
 export default App;

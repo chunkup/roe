@@ -2,8 +2,9 @@ import { IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenu, Io
 import { Redirect, Route } from "react-router-dom";
 import { checkmark, starOutline, trophyOutline } from "ionicons/icons";
 
-import Home from "./pages/Home";
-import ViewMessage from "./pages/ViewMessage";
+import TasksScreen from "./features/task/TasksScreen";
+import DreamsScreen from "./features/dream/DreamsScreen";
+import RewardsScreen from "./features/reward/RewardsScreen";
 
 const Tabs = () => {
     return (
@@ -32,15 +33,15 @@ const Tabs = () => {
                         <Redirect exact path="/tabs" to="/tabs/tasks" />
 
                         <Route exact path="/tabs/tasks">
-                            <Home />
+                            <TasksScreen />
                         </Route>
 
                         <Route exact path="/tabs/dreams">
-                            <Home />
+                            <DreamsScreen />
                         </Route>
 
                         <Route path="/tabs/rewards">
-                            <Home />
+                            <RewardsScreen />
                         </Route>
                     </IonRouterOutlet>
 
@@ -75,10 +76,6 @@ export const Navigation: React.FC = () => {
 
             <Route path="/tabs">
                 <Tabs />
-            </Route>
-
-            <Route path="/message/:id">
-                <ViewMessage />
             </Route>
         </IonRouterOutlet>
     );
