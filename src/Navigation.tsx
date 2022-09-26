@@ -5,6 +5,7 @@ import { checkmark, starOutline, trophyOutline } from "ionicons/icons";
 import TasksScreen from "./features/task/TasksScreen";
 import DreamsScreen from "./features/dream/DreamsScreen";
 import RewardsScreen from "./features/reward/RewardsScreen";
+import TaskEditScreen from "./features/task/TaskEditScreen";
 
 const Tabs = () => {
     return (
@@ -76,6 +77,14 @@ export const Navigation: React.FC = () => {
 
             <Route path="/tabs">
                 <Tabs />
+            </Route>
+
+            <Route path="/add-task">
+                <TaskEditScreen />
+            </Route>
+
+            <Route path="/task-edit">
+                <TaskEditScreen />
             </Route>
         </IonRouterOutlet>
     );

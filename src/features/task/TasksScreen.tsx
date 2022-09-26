@@ -1,7 +1,7 @@
 import { IonCheckbox, IonIcon, IonItem, IonLabel, IonList } from "@ionic/react";
 import { starOutline } from "ionicons/icons";
 
-import { importanceToColor, TaskIterationImportanceEnum } from "./store/task-iteration-importance-enum";
+import { importanceToColor } from "./store/task-iteration-importance-enum";
 import { TaskIteration } from "./store/task-iteration-store";
 import HomeScreen from "../../components/HomeScreen";
 import { useStore } from "../../store";
@@ -17,7 +17,7 @@ const TaskIterationItem = ({ taskIteration }: { taskIteration: TaskIteration }) 
     }
 
     return (
-        <IonItem key={taskIteration.id}>
+        <IonItem routerLink="../task-edit">
             <IonCheckbox
                 slot="start"
                 checked={taskIteration.completed}
@@ -49,20 +49,7 @@ const TaskIterationsList = () => {
 };
 
 const TasksScreen: React.FC = () => {
-    const addTask = useStore((state) => state.taskSlice.add);
-
-    const fabOnClick = () => {
-        addTask(
-            {
-                title: "Buy a milk",
-            },
-            {
-                importance: TaskIterationImportanceEnum.Ordinary,
-            }
-        );
-    };
-
-    return <HomeScreen id="tasks-screen" title="Tasks" list={<TaskIterationsList />} fabOnClick={fabOnClick} />;
+    return <HomeScreen id="tasks-screen" title="Tasks" list={<TaskIterationsList />} fabRouterLink="../add-task" />;
 };
 
 export default TasksScreen;

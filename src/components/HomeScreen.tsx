@@ -16,10 +16,10 @@ interface HomeScreenProps {
     id: string,
     title: string
     list?: any
-    fabOnClick?: () => void
+    fabRouterLink?: string
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ id, title, list, fabOnClick: fabClick }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ id, title, list, fabRouterLink }) => {
     return (
         <IonPage id={id}>
             <IonHeader>
@@ -36,8 +36,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ id, title, list, fabOnClick: fa
                 { list }
 
                 <IonFab vertical="bottom" horizontal="center" slot="fixed">
-                    <IonFabButton>
-                        <IonIcon icon={addCircleOutline} onClick={fabClick} />
+                    <IonFabButton routerLink={fabRouterLink}>
+                        <IonIcon icon={addCircleOutline} />
                     </IonFabButton>
                 </IonFab>
             </IonContent>

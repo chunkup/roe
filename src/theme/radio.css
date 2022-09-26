@@ -1,0 +1,11 @@
+ion-radio.ion-color-primary::part(container) {
+    border-color: var(--ion-color-primary);
+}
+
+ion-radio.ion-color-danger::part(container) {
+    border-color: var(--ion-color-danger);
+}
+
+ion-radio.ion-color-warning::part(container) {
+    border-color: var(--ion-color-warning);
+}

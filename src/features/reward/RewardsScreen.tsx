@@ -31,17 +31,8 @@ const RewardsList = () => {
 }
 
 const RewardsScreen: React.FC = () => {
-    const addReward = useStore(state => state.rewardSlice.add);
-
-    const fabOnClick = () => {
-        addReward({
-            title: 'Reward',
-            price: 1,
-        });
-    }
-
     return (
-        <HomeScreen id="rewards-screen" title="Rewards" list={<RewardsList />} fabOnClick={fabOnClick}/>
+        <HomeScreen id="rewards-screen" title="Rewards" list={<RewardsList />} />
     );
 };
 
