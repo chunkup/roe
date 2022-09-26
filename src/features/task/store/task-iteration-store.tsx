@@ -23,14 +23,16 @@ export interface TaskIteration {
     completedDate: Date | undefined;
 }
 
-export type TaskIterationEditable = Pick<TaskIteration, "taskId" | "date" | "importance">;
+export type TaskIterationAdd = Pick<TaskIteration, "taskId" | "date" | "importance">;
+export type TaskIterationUpdate = Partial<Pick<TaskIteration, "date" | "importance">>;
 
+// TODO: notification
 export interface TaskIterationStoreSlice {
     taskIterationSlice: {
         taskIterations: TaskIteration[];
-        add: (taskIterationEditable: TaskIterationEditable) => void;
+        add: (taskIterationEditable: TaskIterationAdd) => string;
         remove: (taskIterationId: string) => void;
-        update: (taskIterationId: string, taskIterationEditable: TaskIterationEditable) => void;
+        update: (taskIterationId: string, taskIterationEditable: TaskIterationUpdate) => void;
         toggle: (taskIterationId: string) => void;
     };
 }
@@ -44,19 +46,22 @@ export const createTaskIterationStoreSlice: StateCreator<
     taskIterationSlice: {
         taskIterations: [],
 
-        add: (taskIterationEditable) =>
+        add: (taskIterationEditable) => {
+            const taskIterationId = nanoid();
+
             set((state) => {
                 state.taskIterationSlice.taskIterations.push({
-                    id: nanoid(),
+                    id: taskIterationId,
                     taskId: taskIterationEditable.taskId,
                     date: taskIterationEditable.date,
                     importance: taskIterationEditable.importance,
                     completed: false,
                     completedDate: undefined,
                 });
+            })
 
-                // TODO: notification
-            }),
+            return taskIterationId;
+        },
 
         remove: (taskIterationId) =>
             set((state) => {

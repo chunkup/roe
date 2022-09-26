@@ -17,10 +17,10 @@ interface EditScreenProps {
     title: string
     form: any
     fabSaveOnClick?: () => void
-    fabDeleteOnClick?: () => void
+    fabRemoveOnClick?: () => void
 }
 
-const EditScreen: React.FC<EditScreenProps> = ({ id, title, form, fabSaveOnClick, fabDeleteOnClick }) => {
+const EditScreen: React.FC<EditScreenProps> = ({ id, title, form, fabSaveOnClick, fabRemoveOnClick: fabDeleteOnClick }) => {
     return (
         <IonPage id={id}>
             <IonHeader>

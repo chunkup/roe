@@ -83,7 +83,7 @@ export const Navigation: React.FC = () => {
                 <TaskEditScreen />
             </Route>
 
-            <Route path="/task-edit">
+            <Route path="/edit-task/:taskIterationId">
                 <TaskEditScreen />
             </Route>
         </IonRouterOutlet>

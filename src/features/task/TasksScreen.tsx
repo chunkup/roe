@@ -17,7 +17,7 @@ const TaskIterationItem = ({ taskIteration }: { taskIteration: TaskIteration }) 
     }
 
     return (
-        <IonItem routerLink="../task-edit">
+        <IonItem routerLink={"../edit-task/" + taskIteration.id}>
             <IonCheckbox
                 slot="start"
                 checked={taskIteration.completed}

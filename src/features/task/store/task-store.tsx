@@ -1,40 +1,38 @@
-import { StateCreator } from 'zustand'
+import { StateCreator } from "zustand";
+import { nanoid } from "nanoid";
+
+import { TaskRepeatKindEnum } from "./task-repeat-kind-enum";
 import { Mutators, Store } from "../../../store";
-import { nanoid } from 'nanoid'
-import { TaskRepeatKindEnum } from './task-repeat-kind-enum'
-import { TaskIterationEditable } from './task-iteration-store'
 
 export interface Task {
-    id: string
-    dreamId?: string
-    title: string
-    description?: string
-    repeatKind: TaskRepeatKindEnum
-    repeatTimes: number
-    completedTimes: number
-    completed: boolean
+    id: string;
+    dreamId?: string;
+    title: string;
+    description?: string;
+    repeatKind: TaskRepeatKindEnum;
+    repeatTimes: number;
+    completedTimes: number;
+    completed: boolean;
 }
 
-export type TaskEditable = Pick<Task, 'dreamId' | 'title' | 'description'> & Partial<Pick<Task, 'repeatKind' | 'repeatTimes'>>
+export type TaskAdd = Pick<Task, "title"> & Partial<Pick<Task, "dreamId" | "description" | "repeatKind" | "repeatTimes">>;
+export type TaskUpdate = Partial<Pick<Task, "title" | "description" | "repeatKind" | "repeatTimes">>;
 
 export interface TaskStoreSlice {
     taskSlice: {
-        tasks: Task[]
-        add: (taskEditable: TaskEditable, taskIterationEditable: Omit<TaskIterationEditable, "taskId">) => void
-        remove: (taskId: string) => void
-        update: (taskId: string, taskEditable: TaskEditable) => void
-    }
+        tasks: Task[];
+        add: (taskEditable: TaskAdd) => string;
+        remove: (taskId: string) => void;
+        update: (taskId: string, taskEditable: TaskUpdate) => void;
+    };
 }
 
-export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSlice> = (
-    set,
-    get
-) => ({
+export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSlice> = (set) => ({
     taskSlice: {
         tasks: [],
 
-        add: (taskEditable, taskIterationEditable) => {
-            const taskId = nanoid()
+        add: (taskEditable) => {
+            const taskId = nanoid();
 
             set((state) => {
                 state.taskSlice.tasks.push({
@@ -45,34 +43,30 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
                     repeatKind: taskEditable.repeatKind ?? TaskRepeatKindEnum.None,
                     repeatTimes: taskEditable.repeatTimes ?? 1,
                     completedTimes: 0,
-                    completed: false
-                })
-            })
+                    completed: false,
+                });
+            });
 
-            get().taskIterationSlice.add({
-                taskId: taskId,
-                date: taskIterationEditable.date,
-                importance: taskIterationEditable.importance,
-            })
+            return taskId;
         },
 
         remove: (taskId) =>
             set((state) => {
-                state.taskSlice.tasks = state.taskSlice.tasks.filter((task) => task.id !== taskId)
+                state.taskSlice.tasks = state.taskSlice.tasks.filter((task) => task.id !== taskId);
             }),
 
         update: (taskId, taskEditable) =>
             set((state) => {
-                const task = state.taskSlice.tasks.find((task) => task.id === taskId)
+                const task = state.taskSlice.tasks.find((task) => task.id === taskId);
 
                 if (!task) {
-                    throw new Error(`Task with id ${taskId} not found`)
+                    throw new Error(`Task with id ${taskId} not found`);
                 }
 
-                task.title = taskEditable.title ?? task.title
-                task.description = taskEditable.description ?? task.description
-                task.repeatKind = taskEditable.repeatKind ?? task.repeatKind
-                task.repeatTimes = taskEditable.repeatTimes ?? task.repeatTimes
-            })
+                task.title = taskEditable.title ?? task.title;
+                task.description = taskEditable.description ?? task.description;
+                task.repeatKind = taskEditable.repeatKind ?? task.repeatKind;
+                task.repeatTimes = taskEditable.repeatTimes ?? task.repeatTimes;
+            }),
     },
-})
+});

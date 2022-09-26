@@ -1,12 +1,22 @@
-import { IonInput, IonItem, IonLabel, IonList, IonListHeader, IonNote, IonRadio, IonRadioGroup, IonTextarea, useIonRouter } from "@ionic/react";
+import {
+    IonInput,
+    IonItem,
+    IonLabel,
+    IonList,
+    IonListHeader,
+    IonNote,
+    IonRadio,
+    IonRadioGroup,
+    IonTextarea
+} from "@ionic/react";
+import { useHistory, useParams } from "react-router";
 import { FormProvider, useForm, UseFormReturn } from "react-hook-form";
 
 import { TaskIterationImportanceEnum } from "./store/task-iteration-importance-enum";
 import EditScreen from "../../components/EditScreen";
+import { useStore } from "../../store";
 
 import "../../theme/radio.css";
-import { useStore } from "../../store";
-import { useHistory } from "react-router";
 
 type FormInputs = {
     title: string;
@@ -77,28 +87,53 @@ const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formM
 };
 
 const TaskEditScreen: React.FC = () => {
+    const params = useParams<{ taskIterationId: string }>();
     const history = useHistory();
+    const storeTaskIteration = useStore((state) =>state.taskIterationSlice.taskIterations.find((taskIteration) => taskIteration.id === params.taskIterationId));
+    const storeAddTaskIteration = useStore((state) => state.taskIterationSlice.add);
+    const storeUpdateTaskIteration = useStore((state) => state.taskIterationSlice.update);
+    const storeRemoveTaskIteration = useStore((state) => state.taskIterationSlice.remove);
+    const storeTask = useStore((state) => state.taskSlice.tasks.find((task) => task.id === storeTaskIteration?.taskId));
     const storeAddTask = useStore((state) => state.taskSlice.add);
+    const storeUpdateTask = useStore((state) => state.taskSlice.update);
+    const storeRemoveTask = useStore((state) => state.taskSlice.remove);
 
     const formMethods = useForm<FormInputs>({
         defaultValues: {
-            title: "",
-            description: "",
-            importance: TaskIterationImportanceEnum.Ordinary,
+            title: storeTask?.title ?? "",
+            description: storeTask?.description ?? "",
+            importance: storeTaskIteration?.importance ?? TaskIterationImportanceEnum.Ordinary,
         },
     });
 
     const onSubmit = (data: FormInputs) => {
-        storeAddTask({ title: data.title, description: data.description }, { importance: data.importance });
+        if (storeTask && storeTaskIteration) {
+            storeUpdateTask(storeTask.id, { title: data.title, description: data.description });
+            storeUpdateTaskIteration(storeTaskIteration.id, { importance: data.importance });
+        } else {
+            const taskId = storeAddTask({ title: data.title, description: data.description });
+            storeAddTaskIteration({ taskId, importance: data.importance });
+        }
+
+        history.push("/tabs/tasks");
+    };
+
+    const onRemove = () => {
+        if (storeTask && storeTaskIteration) {
+            storeRemoveTaskIteration(storeTaskIteration.id);
+            storeRemoveTask(storeTask.id);
+        }
+
         history.push("/tabs/tasks");
     }
 
     return (
         <EditScreen
-            id="task-edit"
+            id="edit-task"
             title="Task Edit"
             form={<Form formMethods={formMethods} />}
             fabSaveOnClick={formMethods.handleSubmit(onSubmit)}
+            fabRemoveOnClick={onRemove}
         />
     );
 };
