@@ -84,6 +84,9 @@ export const createTaskIterationStoreSlice: StateCreator<
                 taskIteration.importance = taskIterationEditable.importance ?? taskIteration.importance;
             }),
 
+        /**
+         * Toggles task iteration and updates task completed times
+         */
         toggle: (taskIterationId) => {
             const taskIteration = get().taskIterationSlice.taskIterations.find(
                 (taskIteration) => taskIteration.id === taskIterationId,
@@ -96,6 +99,8 @@ export const createTaskIterationStoreSlice: StateCreator<
             if (!task) {
                 throw new Error(`Task with id ${taskIteration.taskId} not found`);
             }
+
+            const prevTaskIterationCompleted = taskIteration.completed;
 
             set((state) => {
                 const taskIteration = state.taskIterationSlice.taskIterations.find((taskIteration) => taskIteration.id === taskIterationId)!;
@@ -112,13 +117,20 @@ export const createTaskIterationStoreSlice: StateCreator<
                 get().dreamSlice.tryComplete(task.dreamId);
             }
 
-            if (!task.completed && taskIteration.date) {
+            // Task iteration uncomplete, no new iteration needed
+            if (prevTaskIterationCompleted && !taskIteration.completed) {
+                return;
+            }
+
+            if (!task.completed) {
                 get().taskIterationSlice.add({
                     taskId: task.id,
-                    date: getNextTaskIterationDate(taskIteration.date, task.repeatKind),
+                    date: taskIteration.date ? getNextTaskIterationDate(taskIteration.date, task.repeatKind) : undefined,
                     importance: taskIteration.importance,
                 });
             }
+
+            // TODO: When prev task iteration get uncommented
         },
     },
 });
