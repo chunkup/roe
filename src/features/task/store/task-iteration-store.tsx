@@ -88,14 +88,12 @@ export const createTaskIterationStoreSlice: StateCreator<
          * Toggles task iteration and updates task completed times
          */
         toggle: (taskIterationId) => {
-            const taskIteration = get().taskIterationSlice.taskIterations.find(
-                (taskIteration) => taskIteration.id === taskIterationId,
-            );
+            let taskIteration = get().taskIterationSlice.taskIterations.find((iteration) => iteration.id === taskIterationId);
             if (!taskIteration) {
                 throw new Error(`TaskIteration with id ${taskIterationId} not found`);
             }
 
-            const task = get().taskSlice.tasks.find((task) => task.id === taskIteration.taskId);
+            let task = get().taskSlice.tasks.find((task) => task.id === taskIteration!.taskId);
             if (!task) {
                 throw new Error(`Task with id ${taskIteration.taskId} not found`);
             }
@@ -113,12 +111,22 @@ export const createTaskIterationStoreSlice: StateCreator<
                 task.completed = task.completedTimes === task.repeatTimes;
             });
 
+            // Updated after set()
+            taskIteration = get().taskIterationSlice.taskIterations.find((iteration) => iteration.id === taskIterationId)!;
+            task = get().taskSlice.tasks.find((task) => task.id === taskIteration!.taskId)!;
+
             if (task.dreamId) {
-                get().dreamSlice.tryComplete(task.dreamId);
+                get().dreamSlice.processTaskCompletion(task.dreamId);
             }
 
-            // Task iteration uncomplete, no new iteration needed
+            // Task iteration uncomplete, no new iteration needed and remove next iter if any
             if (prevTaskIterationCompleted && !taskIteration.completed) {
+                const taskIterations = get().taskIterationSlice.taskIterations.filter((iteration) => iteration.taskId === task!.id);
+                const lastIteration = taskIterations[taskIterations.length - 1];
+                if (taskIteration.id !== lastIteration.id) {
+                    get().taskIterationSlice.remove(taskIterationId);
+                }
+
                 return;
             }
 
@@ -129,8 +137,6 @@ export const createTaskIterationStoreSlice: StateCreator<
                     importance: taskIteration.importance,
                 });
             }
-
-            // TODO: When prev task iteration get uncommented
         },
     },
 });

@@ -17,7 +17,7 @@ export interface DreamStoreSlice {
         add: (dreamEditable: DreamEditable) => void;
         remove: (dreamId: string) => void;
         update: (dreamId: string, dreamEditable: DreamEditable) => void;
-        tryComplete: (dreamId: string) => void;
+        processTaskCompletion: (dreamId: string) => void;
     };
 }
 
@@ -54,7 +54,7 @@ export const createDreamStoreSlice: StateCreator<Store, Mutators, [], DreamStore
                 dream.description = dreamEditable.description;
             }),
 
-        tryComplete: (dreamId) =>
+        processTaskCompletion: (dreamId) =>
             set((state) => {
                 const dream = state.dreamSlice.dreams.find((dream) => dream.id === dreamId);
 
