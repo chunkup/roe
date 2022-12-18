@@ -2,11 +2,11 @@ import create from "zustand";
 import deepMerge from "deepmerge";
 import { persist } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
-import { createDreamStoreSlice, DreamStoreSlice } from "./features/dream/store/dream-store";
-import { createRewardStoreSlice, RewardStoreSlice } from "./features/reward/store/reward-store";
-import { createTaskIterationStoreSlice, TaskIterationStoreSlice } from "./features/task/store/task-iteration-store";
-import { createTaskStoreSlice, TaskStoreSlice } from "./features/task/store/task-store";
-import { createUserStoreSlice, UserStoreSlice } from "./features/user/store/user-store";
+import { createDreamStoreSlice, DreamStoreSlice } from "./features/dream/store/dream.store";
+import { createRewardStoreSlice, RewardStoreSlice } from "./features/reward/store/reward.store";
+import { createTaskIterationStoreSlice, TaskIterationStoreSlice } from "./features/task/store/task-iteration.store";
+import { createTaskStoreSlice, TaskStoreSlice } from "./features/task/store/task.store";
+import { createUserStoreSlice, UserStoreSlice } from "./features/user/store/user.store";
 import { storage } from "./storage";
 
 export type Store = TaskStoreSlice & TaskIterationStoreSlice & DreamStoreSlice & RewardStoreSlice & UserStoreSlice;

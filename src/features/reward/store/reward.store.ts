@@ -1,7 +1,7 @@
 import { StateCreator } from "zustand";
 import { Mutators, Store } from "../../../store";
 import { nanoid } from "nanoid";
-import { adjustUserBalance } from "../../user/store/user-store";
+import { adjustUserBalance } from "../../user/store/user.store";
 
 export interface Reward {
     id: string;

@@ -2,7 +2,7 @@ import { IonCheckbox, IonIcon, IonItem, IonLabel, IonList } from "@ionic/react";
 import { starOutline } from "ionicons/icons";
 import HomeScreen from "../../components/HomeScreen";
 import { useStore } from "../../store";
-import { Reward } from "./store/reward-store";
+import { Reward } from "./store/reward.store";
 
 const RewardItem = ({ reward }: { reward: Reward }) => {
     const rewardToggle = useStore((state) => state.rewardSlice.toggle);

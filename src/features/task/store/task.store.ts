@@ -1,7 +1,7 @@
 import { StateCreator } from "zustand";
 import { nanoid } from "nanoid";
 
-import { TaskRepeatKindEnum } from "./task-repeat-kind-enum";
+import { TaskRepeatKindEnum } from "./task-repeat-kind.enum";
 import { Mutators, Store } from "../../../store";
 
 export interface Task {

@@ -2,12 +2,12 @@ import { StateCreator } from "zustand";
 import { Mutators, Store } from "../../../store";
 import { nanoid } from "nanoid";
 import { Draft } from "immer";
-import { TaskIterationPeriodEnum } from "./task-iteration-period-enum";
-import { importanceToPrice, priceToNumber } from "./task-iteration-price-enum";
-import { TaskIterationImportanceEnum, importanceToArray } from "./task-iteration-importance-enum";
-import { TaskRepeatKindEnum } from "./task-repeat-kind-enum";
-import { tryCompleteDream } from "../../dream/store/dream-store";
-import { adjustUserBalance } from "../../user/store/user-store";
+import { TaskIterationPeriodEnum } from "./task-iteration-period.enum";
+import { importanceToPrice, priceToNumber } from "./task-iteration-price.enum";
+import { TaskIterationImportanceEnum, importanceToArray } from "./task-iteration-importance.enum";
+import { TaskRepeatKindEnum } from "./task-repeat-kind.enum";
+import { tryCompleteDream } from "../../dream/store/dream.store";
+import { adjustUserBalance } from "../../user/store/user.store";
 
 export interface TaskIteration {
     id: string;

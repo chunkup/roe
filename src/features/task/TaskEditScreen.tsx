@@ -2,7 +2,7 @@ import { IonInput, IonItem, IonLabel, IonList, IonListHeader, IonNote, IonRadio,
 import { useHistory, useParams } from "react-router";
 import { FormProvider, useForm, UseFormReturn } from "react-hook-form";
 
-import { TaskIterationImportanceEnum } from "./store/task-iteration-importance-enum";
+import { TaskIterationImportanceEnum } from "./store/task-iteration-importance.enum";
 import EditScreen from "../../components/EditScreen";
 import { useStore } from "../../store";
 

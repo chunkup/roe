@@ -1,8 +1,8 @@
 import { IonCheckbox, IonIcon, IonItem, IonLabel, IonList } from "@ionic/react";
 import { starOutline } from "ionicons/icons";
 
-import { importanceToColor } from "./store/task-iteration-importance-enum";
-import { TaskIteration } from "./store/task-iteration-store";
+import { importanceToColor } from "./store/task-iteration-importance.enum";
+import { TaskIteration } from "./store/task-iteration.store";
 import HomeScreen from "../../components/HomeScreen";
 import { useStore } from "../../store";
 
