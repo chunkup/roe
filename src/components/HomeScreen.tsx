@@ -14,12 +14,13 @@ import { addCircleOutline } from 'ionicons/icons';
 
 interface HomeScreenProps {
     id: string,
-    title: string
-    list?: any
-    fabRouterLink?: string
+    title: string,
+    list?: any,
+    fabRouterLink?: string,
+    toolbarRight?: any,
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ id, title, list, fabRouterLink }) => {
+const HomeScreen: React.FC<HomeScreenProps> = ({ id, title, list, fabRouterLink, toolbarRight }) => {
     return (
         <IonPage id={id}>
             <IonHeader>
@@ -29,6 +30,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ id, title, list, fabRouterLink 
                     </IonButtons>
 
                     <IonTitle>{ title } </IonTitle>
+
+                    <IonButtons slot="end">
+                        { toolbarRight }
+                    </IonButtons>
                 </IonToolbar>
             </IonHeader>
 
