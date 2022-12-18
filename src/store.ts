@@ -27,10 +27,9 @@ export const useStore = create<Store>()(
             getStorage: () => ({
                 getItem: (key: string) => storage.get(key),
                 setItem: (key: string, value: string) => storage.set(key, value),
-                removeItem: (key: string) => storage.remove(key)
+                removeItem: (key: string) => storage.remove(key),
             }),
-            merge: (oldState: any, newState: any) =>
-                deepMerge(oldState, newState, { arrayMerge: (a, b) => a.length ? a : b }),
+            merge: (oldState: any, newState: any) => deepMerge(newState, oldState, { arrayMerge: (a, b) => b }),
         }
     )
 );
@@ -38,4 +37,3 @@ export const useStore = create<Store>()(
 export async function setupStore() {
     await useStore.persist.rehydrate();
 }
-

@@ -23,9 +23,7 @@ export interface RewardStoreSlice {
     };
 }
 
-export const createRewardStoreSlice: StateCreator<Store, Mutators, [], RewardStoreSlice> = (
-    set,
-) => ({
+export const createRewardStoreSlice: StateCreator<Store, Mutators, [], RewardStoreSlice> = (set, get) => ({
     rewardSlice: {
         rewards: [],
 
@@ -43,9 +41,7 @@ export const createRewardStoreSlice: StateCreator<Store, Mutators, [], RewardSto
 
         remove: (rewardId) =>
             set((state) => {
-                state.rewardSlice.rewards = state.rewardSlice.rewards.filter(
-                    (reward) => reward.id !== rewardId,
-                );
+                state.rewardSlice.rewards = state.rewardSlice.rewards.filter((reward) => reward.id !== rewardId);
             }),
 
         update: (rewardId, rewardEditable) =>
@@ -61,7 +57,7 @@ export const createRewardStoreSlice: StateCreator<Store, Mutators, [], RewardSto
                 reward.price = rewardEditable.price;
             }),
 
-        toggle: (rewardId, bought) =>
+        toggle: (rewardId, bought) => {
             set((state) => {
                 const reward = state.rewardSlice.rewards.find((reward) => reward.id === rewardId);
 
@@ -69,12 +65,14 @@ export const createRewardStoreSlice: StateCreator<Store, Mutators, [], RewardSto
                     throw new Error(`Reward with id ${rewardId} not found`);
                 }
 
-                if (reward.dreamId && bought == null) {
+                if (!reward.bought && state.userSlice.balance < reward.price) {
                     return;
                 }
 
+                state.userSlice.balance = Number(state.userSlice.balance) + (reward.bought ? 1 : -1) * Number(reward.price);
                 reward.bought = bought ?? !reward.bought;
-            }),
+            });
+        },
     },
 });
 

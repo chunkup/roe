@@ -6,6 +6,7 @@ import TasksScreen from "./features/task/TasksScreen";
 import DreamsScreen from "./features/dream/DreamsScreen";
 import RewardsScreen from "./features/reward/RewardsScreen";
 import TaskEditScreen from "./features/task/TaskEditScreen";
+import RewardEditScreen from "./features/reward/RewardEditScreen";
 
 const Tabs = () => {
     return (
@@ -85,6 +86,14 @@ export const Navigation: React.FC = () => {
 
             <Route path="/edit-task/:taskIterationId">
                 <TaskEditScreen />
+            </Route>
+
+            <Route path="/add-reward">
+                <RewardEditScreen />
+            </Route>
+
+            <Route path="/edit-reward/:rewardId">
+                <RewardEditScreen />
             </Route>
         </IonRouterOutlet>
     );
