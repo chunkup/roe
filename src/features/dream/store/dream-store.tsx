@@ -1,6 +1,7 @@
 import { StateCreator } from "zustand";
 import { Mutators, Store } from "../../../store";
 import { nanoid } from "nanoid";
+import { Draft } from "immer";
 
 export interface Dream {
     id: string;
@@ -17,13 +18,30 @@ export interface DreamStoreSlice {
         add: (dreamEditable: DreamEditable) => void;
         remove: (dreamId: string) => void;
         update: (dreamId: string, dreamEditable: DreamEditable) => void;
-        processTaskCompletion: (dreamId: string) => void;
+        tryCompleteDream: (dreamId: string) => void;
     };
 }
 
-export const createDreamStoreSlice: StateCreator<Store, Mutators, [], DreamStoreSlice> = (
-    set,
-) => ({
+export function tryCompleteDream(state: Draft<Store>, dreamId: string): void {
+    const dream = state.dreamSlice.dreams.find((dream) => dream.id === dreamId);
+
+    if (!dream) {
+        throw new Error(`Dream with id ${dreamId} not found`);
+    }
+
+    const tasks = state.taskSlice.tasks.filter((task) => task.dreamId === dreamId);
+    const rewards = state.rewardSlice.rewards.filter((reward) => reward.dreamId === dreamId);
+    const completed = tasks.every((task) => task.completed);
+
+    if (dream.completed === completed) {
+        return;
+    }
+
+    dream.completed = completed;
+    rewards.forEach((reward) => state.rewardSlice.toggle(reward.id, completed));
+}
+
+export const createDreamStoreSlice: StateCreator<Store, Mutators, [], DreamStoreSlice> = (set) => ({
     dreamSlice: {
         dreams: [],
 
@@ -54,21 +72,7 @@ export const createDreamStoreSlice: StateCreator<Store, Mutators, [], DreamStore
                 dream.description = dreamEditable.description;
             }),
 
-        processTaskCompletion: (dreamId) =>
-            set((state) => {
-                const dream = state.dreamSlice.dreams.find((dream) => dream.id === dreamId);
-
-                if (!dream) {
-                    throw new Error(`Dream with id ${dreamId} not found`);
-                }
-
-                const tasks = state.taskSlice.tasks.filter(task => task.dreamId === dreamId);
-                const rewards = state.rewardSlice.rewards.filter(reward => reward.dreamId === dreamId);
-                const completed = tasks.every(task => task.completed);
-
-                dream.completed = completed;
-                rewards.forEach(reward => state.rewardSlice.toggle(reward.id, completed));
-            })
+        tryCompleteDream: (dreamId) => set((state) => tryCompleteDream(state, dreamId)),
     },
 });
 

@@ -1,6 +1,7 @@
 import { StateCreator } from "zustand";
 import { Mutators, Store } from "../../../store";
 import { nanoid } from "nanoid";
+import { adjustUserBalance } from "../../user/store/user-store";
 
 export interface Reward {
     id: string;
@@ -23,7 +24,7 @@ export interface RewardStoreSlice {
     };
 }
 
-export const createRewardStoreSlice: StateCreator<Store, Mutators, [], RewardStoreSlice> = (set, get) => ({
+export const createRewardStoreSlice: StateCreator<Store, Mutators, [], RewardStoreSlice> = (set) => ({
     rewardSlice: {
         rewards: [],
 
@@ -69,7 +70,8 @@ export const createRewardStoreSlice: StateCreator<Store, Mutators, [], RewardSto
                     return;
                 }
 
-                state.userSlice.balance = Number(state.userSlice.balance) + (reward.bought ? 1 : -1) * Number(reward.price);
+                adjustUserBalance(state, (reward.bought ? 1 : -1) * Number(reward.price));
+
                 reward.bought = bought ?? !reward.bought;
             });
         },

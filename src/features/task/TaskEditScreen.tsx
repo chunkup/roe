@@ -80,7 +80,7 @@ const TaskEditScreen: React.FC = () => {
     const params = useParams<{ taskIterationId: string }>();
     const history = useHistory();
     const taskIteration = useStore((state) =>
-        state.taskIterationSlice.taskIterations.find((taskIteration) => taskIteration.id === params.taskIterationId)
+        state.taskIterationSlice.taskIterations.find((iteration) => iteration.id === params.taskIterationId)
     );
     const addTaskIteration = useStore((state) => state.taskIterationSlice.add);
     const updateTaskIteration = useStore((state) => state.taskIterationSlice.update);
@@ -112,7 +112,6 @@ const TaskEditScreen: React.FC = () => {
 
     const onRemove = () => {
         if (task && taskIteration) {
-            // TODO: Think about removing completed tasks
             removeTaskIteration(taskIteration.id);
             removeTask(task.id);
         }
@@ -126,7 +125,7 @@ const TaskEditScreen: React.FC = () => {
             title="Task Edit"
             form={<Form formMethods={formMethods} />}
             fabSaveOnClick={formMethods.handleSubmit(onSubmit)}
-            fabRemoveOnClick={task && onRemove}
+            fabRemoveOnClick={task?.completedTimes === 0 ? onRemove : undefined}
         />
     );
 };

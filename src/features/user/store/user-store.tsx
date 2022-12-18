@@ -8,15 +8,14 @@ export interface UserStoreSlice {
     };
 }
 
-export const createUserStoreSlice: StateCreator<Store, Mutators, [], UserStoreSlice> = (
-    set,
-) => ({
+export function adjustUserBalance(state: Store, amount: number) {
+    state.userSlice.balance = Number(state.userSlice.balance) + Number(amount);
+}
+
+export const createUserStoreSlice: StateCreator<Store, Mutators, [], UserStoreSlice> = (set) => ({
     userSlice: {
         balance: 0,
 
-        adjustBalance: (amount) =>
-            set(state => {
-                state.userSlice.balance += amount;
-            })
+        adjustBalance: (amount) => set((state) => adjustUserBalance(state, amount)),
     },
 });

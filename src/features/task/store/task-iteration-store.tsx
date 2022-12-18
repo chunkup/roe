@@ -1,18 +1,13 @@
 import { StateCreator } from "zustand";
 import { Mutators, Store } from "../../../store";
 import { nanoid } from "nanoid";
-import {
-    TaskIterationPeriodEnum,
-} from "./task-iteration-period-enum";
-import {
-    importanceToPrice,
-    priceToNumber,
-} from "./task-iteration-price-enum";
-import {
-    TaskIterationImportanceEnum,
-    importanceToArray,
-} from "./task-iteration-importance-enum";
+import { Draft } from "immer";
+import { TaskIterationPeriodEnum } from "./task-iteration-period-enum";
+import { importanceToPrice, priceToNumber } from "./task-iteration-price-enum";
+import { TaskIterationImportanceEnum, importanceToArray } from "./task-iteration-importance-enum";
 import { TaskRepeatKindEnum } from "./task-repeat-kind-enum";
+import { tryCompleteDream } from "../../dream/store/dream-store";
+import { adjustUserBalance } from "../../user/store/user-store";
 
 export interface TaskIteration {
     id: string;
@@ -30,51 +25,47 @@ export type TaskIterationUpdate = Partial<Pick<TaskIteration, "date" | "importan
 export interface TaskIterationStoreSlice {
     taskIterationSlice: {
         taskIterations: TaskIteration[];
-        add: (taskIterationEditable: TaskIterationAdd) => string;
+        add: (taskIterationEditable: TaskIterationAdd) => void;
         remove: (taskIterationId: string) => void;
         update: (taskIterationId: string, taskIterationEditable: TaskIterationUpdate) => void;
         toggle: (taskIterationId: string) => void;
     };
 }
 
-export const createTaskIterationStoreSlice: StateCreator<
-    Store,
-    Mutators,
-    [],
-    TaskIterationStoreSlice
-> = (set, get) => ({
+export function addTaskIteration(state: Draft<Store>, taskIterationEditable: TaskIterationAdd) {
+    const taskIterationId = nanoid();
+
+    state.taskIterationSlice.taskIterations.push({
+        id: taskIterationId,
+        taskId: taskIterationEditable.taskId,
+        date: taskIterationEditable.date,
+        importance: taskIterationEditable.importance,
+        completed: false,
+        completedDate: undefined,
+    });
+}
+
+export function removeTaskIteration(state: Draft<Store>, taskIterationId: string) {
+    const taskIterationIndex = state.taskIterationSlice.taskIterations.findIndex((taskIteration) => taskIteration.id === taskIterationId);
+
+    if (taskIterationIndex === -1) {
+        throw new Error("Task iteration not found");
+    }
+
+    state.taskIterationSlice.taskIterations.splice(taskIterationIndex, 1);
+}
+
+export const createTaskIterationStoreSlice: StateCreator<Store, Mutators, [], TaskIterationStoreSlice> = (set) => ({
     taskIterationSlice: {
         taskIterations: [],
 
-        add: (taskIterationEditable) => {
-            const taskIterationId = nanoid();
+        add: (taskIterationEditable) => set((state) => addTaskIteration(state, taskIterationEditable)),
 
-            set((state) => {
-                state.taskIterationSlice.taskIterations.push({
-                    id: taskIterationId,
-                    taskId: taskIterationEditable.taskId,
-                    date: taskIterationEditable.date,
-                    importance: taskIterationEditable.importance,
-                    completed: false,
-                    completedDate: undefined,
-                });
-            })
-
-            return taskIterationId;
-        },
-
-        remove: (taskIterationId) =>
-            set((state) => {
-                state.taskIterationSlice.taskIterations = state.taskIterationSlice.taskIterations.filter(
-                    (taskIteration) => taskIteration.id !== taskIterationId,
-                );
-            }),
+        remove: (taskIterationId) => set((state) => removeTaskIteration(state, taskIterationId)),
 
         update: (taskIterationId, taskIterationEditable) =>
             set((state) => {
-                const taskIteration = state.taskIterationSlice.taskIterations.find(
-                    (taskIteration) => taskIteration.id === taskIterationId,
-                );
+                const taskIteration = state.taskIterationSlice.taskIterations.find((taskIteration) => taskIteration.id === taskIterationId);
 
                 if (!taskIteration) {
                     throw new Error(`TaskIteration with id ${taskIterationId} not found`);
@@ -88,68 +79,51 @@ export const createTaskIterationStoreSlice: StateCreator<
          * Toggle task iteration, process referenced task & dream, create of delete next iteration if needed
          */
         toggle: (taskIterationId) => {
-            let taskIteration = get().taskIterationSlice.taskIterations.find((iteration) => iteration.id === taskIterationId);
-            if (!taskIteration) {
-                throw new Error(`TaskIteration with id ${taskIterationId} not found`);
-            }
-
-            let task = get().taskSlice.tasks.find((task) => task.id === taskIteration!.taskId);
-            if (!task) {
-                throw new Error(`Task with id ${taskIteration.taskId} not found`);
-            }
-
-            const prevTaskIterationCompleted = taskIteration.completed;
-
             set((state) => {
-                const taskIteration = state.taskIterationSlice.taskIterations.find((taskIteration) => taskIteration.id === taskIterationId)!;
+                const taskIteration = state.taskIterationSlice.taskIterations.find((iteration) => iteration.id === taskIterationId)!;
+                if (!taskIteration) {
+                    throw new Error(`TaskIteration with id ${taskIterationId} not found`);
+                }
+
                 const task = state.taskSlice.tasks.find((task) => task.id === taskIteration.taskId)!;
+                if (!task) {
+                    throw new Error(`Task with id ${taskIteration.taskId} not found`);
+                }
 
                 taskIteration.completed = !taskIteration.completed;
                 taskIteration.completedDate = taskIteration.completed ? new Date() : undefined;
 
                 task.completedTimes += taskIteration.completed ? 1 : -1;
                 task.completed = task.completedTimes === task.repeatTimes;
-            });
 
-            // Updated after set()
-            taskIteration = get().taskIterationSlice.taskIterations.find((iteration) => iteration.id === taskIterationId)!;
-            task = get().taskSlice.tasks.find((task) => task.id === taskIteration!.taskId)!;
+                adjustUserBalance(state, priceToNumber(importanceToPrice(taskIteration.importance)) * (taskIteration.completed ? 1 : -1));
 
-            get().userSlice.adjustBalance(
-                priceToNumber(importanceToPrice(taskIteration.importance)) * (taskIteration.completed ? 1 : -1)
-            );
-
-            if (task.dreamId) {
-                get().dreamSlice.processTaskCompletion(task.dreamId);
-            }
-
-            // Task iteration uncomplete, no new iteration needed and remove next iter if any
-            if (prevTaskIterationCompleted && !taskIteration.completed) {
-                const taskIterations = get().taskIterationSlice.taskIterations.filter((iteration) => iteration.taskId === task!.id);
-                const lastIteration = taskIterations[taskIterations.length - 1];
-
-                if (taskIteration.id !== lastIteration.id) {
-                    get().taskIterationSlice.remove(taskIterationId);
+                if (task.dreamId) {
+                    tryCompleteDream(state, task.dreamId);
                 }
 
-                return;
-            }
+                if (!taskIteration.completed) {
+                    const anotherUncompletedTaskIteration = state.taskIterationSlice.taskIterations.find(
+                        (iteration) =>
+                            !iteration.completed && iteration.taskId === taskIteration.taskId && iteration.id !== taskIteration.id
+                    );
 
-            if (!task.completed) {
-                get().taskIterationSlice.add({
-                    taskId: task.id,
-                    date: taskIteration.date ? getNextTaskIterationDate(taskIteration.date, task.repeatKind) : undefined,
-                    importance: taskIteration.importance,
-                });
-            }
+                    if (anotherUncompletedTaskIteration) {
+                        removeTaskIteration(state, anotherUncompletedTaskIteration.id);
+                    }
+                } else if (!task.completed) {
+                    addTaskIteration(state, {
+                        taskId: task.id,
+                        date: getNextTaskIterationDate(taskIteration.completedDate!, task.repeatKind),
+                        importance: taskIteration.importance,
+                    });
+                }
+            });
         },
     },
 });
 
-export function filterTaskIterations(
-    taskIterations: TaskIteration[],
-    period: TaskIterationPeriodEnum,
-): TaskIteration[] {
+export function filterTaskIterations(taskIterations: TaskIteration[], period: TaskIterationPeriodEnum): TaskIteration[] {
     const now = new Date();
     let periodFilterFn: (taskIterationA: TaskIteration) => boolean;
 
@@ -196,20 +170,13 @@ export function sortTaskIterations(taskIterations: TaskIteration[]) {
     const taskImportanceArray = importanceToArray();
 
     return taskIterations
-        .sort(
-            (a, b) =>
-                taskImportanceArray.indexOf(a.importance) - taskImportanceArray.indexOf(b.importance),
-        )
+        .sort((a, b) => taskImportanceArray.indexOf(a.importance) - taskImportanceArray.indexOf(b.importance))
         .sort((a, b) => (a.completed ? 1 : 0) - (b.completed ? 1 : 0));
 }
 
 export function getTaskIterationsLoad(taskIterations: TaskIteration[]): number {
     return taskIterations
-        .map((taskIteration) =>
-            priceToNumber(
-                importanceToPrice(taskIteration.importance),
-            ),
-        )
+        .map((taskIteration) => priceToNumber(importanceToPrice(taskIteration.importance)))
         .reduce((load, price) => load + price, 0);
 }
 
