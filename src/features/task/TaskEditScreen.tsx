@@ -1,14 +1,4 @@
-import {
-    IonInput,
-    IonItem,
-    IonLabel,
-    IonList,
-    IonListHeader,
-    IonNote,
-    IonRadio,
-    IonRadioGroup,
-    IonTextarea
-} from "@ionic/react";
+import { IonInput, IonItem, IonLabel, IonList, IonListHeader, IonNote, IonRadio, IonRadioGroup, IonTextarea } from "@ionic/react";
 import { useHistory, useParams } from "react-router";
 import { FormProvider, useForm, UseFormReturn } from "react-hook-form";
 
@@ -89,44 +79,46 @@ const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formM
 const TaskEditScreen: React.FC = () => {
     const params = useParams<{ taskIterationId: string }>();
     const history = useHistory();
-    const storeTaskIteration = useStore((state) =>state.taskIterationSlice.taskIterations.find((taskIteration) => taskIteration.id === params.taskIterationId));
-    const storeAddTaskIteration = useStore((state) => state.taskIterationSlice.add);
-    const storeUpdateTaskIteration = useStore((state) => state.taskIterationSlice.update);
-    const storeRemoveTaskIteration = useStore((state) => state.taskIterationSlice.remove);
-    const storeTask = useStore((state) => state.taskSlice.tasks.find((task) => task.id === storeTaskIteration?.taskId));
-    const storeAddTask = useStore((state) => state.taskSlice.add);
-    const storeUpdateTask = useStore((state) => state.taskSlice.update);
-    const storeRemoveTask = useStore((state) => state.taskSlice.remove);
+    const taskIteration = useStore((state) =>
+        state.taskIterationSlice.taskIterations.find((taskIteration) => taskIteration.id === params.taskIterationId)
+    );
+    const addTaskIteration = useStore((state) => state.taskIterationSlice.add);
+    const updateTaskIteration = useStore((state) => state.taskIterationSlice.update);
+    const removeTaskIteration = useStore((state) => state.taskIterationSlice.remove);
+    const task = useStore((state) => state.taskSlice.tasks.find((task) => task.id === taskIteration?.taskId));
+    const addTask = useStore((state) => state.taskSlice.add);
+    const updateTask = useStore((state) => state.taskSlice.update);
+    const removeTask = useStore((state) => state.taskSlice.remove);
 
     const formMethods = useForm<FormInputs>({
         defaultValues: {
-            title: storeTask?.title ?? "",
-            description: storeTask?.description ?? "",
-            importance: storeTaskIteration?.importance ?? TaskIterationImportanceEnum.Ordinary,
+            title: task?.title ?? "",
+            description: task?.description ?? "",
+            importance: taskIteration?.importance ?? TaskIterationImportanceEnum.Ordinary,
         },
     });
 
     const onSubmit = (data: FormInputs) => {
-        if (storeTask && storeTaskIteration) {
-            storeUpdateTask(storeTask.id, { title: data.title, description: data.description });
-            storeUpdateTaskIteration(storeTaskIteration.id, { importance: data.importance });
+        if (task && taskIteration) {
+            updateTask(task.id, { title: data.title, description: data.description });
+            updateTaskIteration(taskIteration.id, { importance: data.importance });
         } else {
-            const taskId = storeAddTask({ title: data.title, description: data.description });
-            storeAddTaskIteration({ taskId, importance: data.importance });
+            const taskId = addTask({ title: data.title, description: data.description });
+            addTaskIteration({ taskId, importance: data.importance });
         }
 
         history.push("/tabs/tasks");
     };
 
     const onRemove = () => {
-        if (storeTask && storeTaskIteration) {
+        if (task && taskIteration) {
             // TODO: Think about removing completed tasks
-            storeRemoveTaskIteration(storeTaskIteration.id);
-            storeRemoveTask(storeTask.id);
+            removeTaskIteration(taskIteration.id);
+            removeTask(task.id);
         }
 
         history.push("/tabs/tasks");
-    }
+    };
 
     return (
         <EditScreen
@@ -134,7 +126,7 @@ const TaskEditScreen: React.FC = () => {
             title="Task Edit"
             form={<Form formMethods={formMethods} />}
             fabSaveOnClick={formMethods.handleSubmit(onSubmit)}
-            fabRemoveOnClick={onRemove}
+            fabRemoveOnClick={task && onRemove}
         />
     );
 };

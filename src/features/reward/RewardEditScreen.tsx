@@ -57,32 +57,32 @@ const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formM
 const RewardEditScreen: React.FC = () => {
     const params = useParams<{ rewardId: string }>();
     const history = useHistory();
-    const storeReward = useStore((state) => state.rewardSlice.rewards.find((reward) => reward.id === params.rewardId));
-    const storeAddReward = useStore((state) => state.rewardSlice.add);
-    const storeUpdateReward = useStore((state) => state.rewardSlice.update);
-    const storeRemoveReward = useStore((state) => state.rewardSlice.remove);
+    const reward = useStore((state) => state.rewardSlice.rewards.find((reward) => reward.id === params.rewardId));
+    const addReward = useStore((state) => state.rewardSlice.add);
+    const updateReward = useStore((state) => state.rewardSlice.update);
+    const removeReward = useStore((state) => state.rewardSlice.remove);
 
     const formMethods = useForm<FormInputs>({
         defaultValues: {
-            title: storeReward?.title ?? "",
-            description: storeReward?.description ?? "",
-            price: storeReward?.price ?? 0,
+            title: reward?.title ?? "",
+            description: reward?.description ?? "",
+            price: reward?.price ?? 0,
         },
     });
 
     const onSubmit = (data: FormInputs) => {
-        if (storeReward) {
-            storeUpdateReward(storeReward.id, { title: data.title, description: data.description, price: data.price });
+        if (reward) {
+            updateReward(reward.id, { title: data.title, description: data.description, price: data.price });
         } else {
-            storeAddReward({ title: data.title, description: data.description, price: data.price });
+            addReward({ title: data.title, description: data.description, price: data.price });
         }
 
         history.push("/tabs/rewards");
     };
 
     const onRemove = () => {
-        if (storeReward) {
-            storeRemoveReward(storeReward.id);
+        if (reward) {
+            removeReward(reward.id);
         }
 
         history.push("/tabs/rewards");
@@ -94,7 +94,7 @@ const RewardEditScreen: React.FC = () => {
             title="Reward Edit"
             form={<Form formMethods={formMethods} />}
             fabSaveOnClick={formMethods.handleSubmit(onSubmit)}
-            fabRemoveOnClick={onRemove}
+            fabRemoveOnClick={reward && onRemove}
         />
     );
 };

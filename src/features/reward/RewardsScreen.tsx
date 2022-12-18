@@ -2,17 +2,13 @@ import { IonCheckbox, IonIcon, IonItem, IonLabel, IonList } from "@ionic/react";
 import { starOutline } from "ionicons/icons";
 import HomeScreen from "../../components/HomeScreen";
 import { useStore } from "../../store";
+import { Reward } from "./store/reward-store";
 
-const RewardItem = ({ rewardId }: { rewardId: string }) => {
-    const reward = useStore((state) => state.rewardSlice.rewards.find((reward) => reward.id === rewardId));
+const RewardItem = ({ reward }: { reward: Reward }) => {
     const rewardToggle = useStore((state) => state.rewardSlice.toggle);
     const userBalance = useStore((state) => state.userSlice.balance);
 
-    if (!reward) {
-        return null;
-    }
-
-    const rewardBuyable = userBalance >= reward?.price || reward.bought;
+    const rewardBuyable = reward.bought || userBalance >= reward?.price;
 
     return (
         <IonItem routerLink={"../edit-reward/" + reward.id}>
@@ -24,7 +20,7 @@ const RewardItem = ({ rewardId }: { rewardId: string }) => {
                     checked={reward.bought}
                     disabled={!rewardBuyable}
                     onClick={(e) => e.stopPropagation()}
-                    onIonChange={() => rewardToggle(rewardId)}
+                    onIonChange={() => rewardToggle(reward.id)}
                 />
             )}
 
@@ -33,7 +29,7 @@ const RewardItem = ({ rewardId }: { rewardId: string }) => {
                 {reward.description && <p>{reward.description}</p>}
             </IonLabel>
 
-            {reward.dreamId ? <IonIcon icon={starOutline} slot="end" /> : <IonLabel slot="end">{reward.price}</IonLabel>}
+            {!reward.dreamId && <IonLabel slot="end">{reward.price}</IonLabel>}
         </IonItem>
     );
 };
@@ -44,7 +40,7 @@ const RewardsList = () => {
     return (
         <IonList>
             {rewards.map((reward) => (
-                <RewardItem rewardId={reward.id} key={reward.id} />
+                <RewardItem reward={reward} key={reward.id} />
             ))}
         </IonList>
     );
