@@ -85,7 +85,7 @@ export const createTaskIterationStoreSlice: StateCreator<
             }),
 
         /**
-         * Toggles task iteration and updates task completed times
+         * Toggle task iteration, process referenced task & dream, create of delete next iteration if needed
          */
         toggle: (taskIterationId) => {
             let taskIteration = get().taskIterationSlice.taskIterations.find((iteration) => iteration.id === taskIterationId);
@@ -115,6 +115,10 @@ export const createTaskIterationStoreSlice: StateCreator<
             taskIteration = get().taskIterationSlice.taskIterations.find((iteration) => iteration.id === taskIterationId)!;
             task = get().taskSlice.tasks.find((task) => task.id === taskIteration!.taskId)!;
 
+            get().userSlice.adjustBalance(
+                priceToNumber(importanceToPrice(taskIteration.importance)) * (taskIteration.completed ? 1 : -1)
+            );
+
             if (task.dreamId) {
                 get().dreamSlice.processTaskCompletion(task.dreamId);
             }
@@ -123,6 +127,7 @@ export const createTaskIterationStoreSlice: StateCreator<
             if (prevTaskIterationCompleted && !taskIteration.completed) {
                 const taskIterations = get().taskIterationSlice.taskIterations.filter((iteration) => iteration.taskId === task!.id);
                 const lastIteration = taskIterations[taskIterations.length - 1];
+
                 if (taskIteration.id !== lastIteration.id) {
                     get().taskIterationSlice.remove(taskIterationId);
                 }

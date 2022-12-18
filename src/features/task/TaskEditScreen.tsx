@@ -120,6 +120,7 @@ const TaskEditScreen: React.FC = () => {
 
     const onRemove = () => {
         if (storeTask && storeTaskIteration) {
+            // TODO: Think about removing completed tasks
             storeRemoveTaskIteration(storeTaskIteration.id);
             storeRemoveTask(storeTask.id);
         }

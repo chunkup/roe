@@ -21,7 +21,8 @@ const TaskIterationItem = ({ taskIteration }: { taskIteration: TaskIteration }) 
             <IonCheckbox
                 slot="start"
                 checked={taskIteration.completed}
-                onClick={() => toggleTaskIteration(taskIteration.id)}
+                onClick={(e) => e.stopPropagation()}
+                onIonChange={() => toggleTaskIteration(taskIteration.id)}
                 color={importanceToColor(taskIteration.importance)}
                 className={importanceToColor(taskIteration.importance)}
             ></IonCheckbox>
