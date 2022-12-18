@@ -1,12 +1,26 @@
-import { IonContent, IonHeader, IonIcon, IonItem, IonLabel, IonList, IonMenu, IonRouterOutlet, IonTabBar, IonTabButton, IonTabs, IonTitle, IonToolbar } from "@ionic/react";
+import {
+    IonContent,
+    IonHeader,
+    IonIcon,
+    IonItem,
+    IonLabel,
+    IonList,
+    IonMenu,
+    IonRouterOutlet,
+    IonTabBar,
+    IonTabButton,
+    IonTabs,
+    IonTitle,
+    IonToolbar,
+} from "@ionic/react";
 import { Redirect, Route } from "react-router-dom";
 import { checkmark, starOutline, trophyOutline } from "ionicons/icons";
 
-import TasksScreen from "./features/task/TasksScreen";
-import DreamsScreen from "./features/dream/DreamsScreen";
-import RewardsScreen from "./features/reward/RewardsScreen";
-import TaskEditScreen from "./features/task/TaskEditScreen";
-import RewardEditScreen from "./features/reward/RewardEditScreen";
+import TasksScreen from "./features/task/tasks.screen";
+import DreamsScreen from "./features/dream/dreams.screen";
+import RewardsScreen from "./features/reward/rewards.screen";
+import TaskEditScreen from "./features/task/task-edit.screen";
+import RewardEditScreen from "./features/reward/reward-edit.screen";
 
 const Tabs = () => {
     return (
