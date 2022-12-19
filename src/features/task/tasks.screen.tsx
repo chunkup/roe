@@ -17,7 +17,7 @@ const TaskIterationItem = ({ taskIteration }: { taskIteration: TaskIteration }) 
     }
 
     return (
-        <IonItem routerLink={"../edit-task/" + taskIteration.id}>
+        <IonItem routerLink={"/tasks/" + taskIteration.id}>
             <IonCheckbox
                 slot="start"
                 checked={taskIteration.completed}
@@ -50,7 +50,7 @@ const TaskIterationsList = () => {
 };
 
 const TasksScreen: React.FC = () => {
-    return <HomeScreen id="tasks-screen" title="Tasks" list={<TaskIterationsList />} fabRouterLink="../add-task" />;
+    return <HomeScreen id="tasks-screen" title="Tasks" list={<TaskIterationsList />} fabRouterLink="/tasks/add" />;
 };
 
 export default TasksScreen;

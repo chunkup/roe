@@ -11,7 +11,7 @@ const RewardItem = ({ reward }: { reward: Reward }) => {
     const rewardBuyable = reward.bought || userBalance >= reward?.price;
 
     return (
-        <IonItem routerLink={"../edit-reward/" + reward.id}>
+        <IonItem routerLink={"/rewards/" + reward.id}>
             {reward.dreamId ? (
                 <IonIcon icon={starOutline} slot="start" />
             ) : (
@@ -55,7 +55,7 @@ const RewardsScreen: React.FC = () => {
             title="Rewards"
             list={<RewardsList />}
             toolbarRight={<IonLabel class="ion-margin-horizontal">{userBalance}</IonLabel>}
-            fabRouterLink="../add-reward"
+            fabRouterLink="/rewards/add"
         />
     );
 };

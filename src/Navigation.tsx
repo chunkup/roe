@@ -46,7 +46,9 @@ const Tabs = () => {
             <IonContent scrollX={false} scrollY={false} id="tabs">
                 <IonTabs>
                     <IonRouterOutlet>
-                        <Redirect exact path="/tabs" to="/tabs/tasks" />
+                        <Route exact path="/tabs">
+                            <Redirect to="/tabs/tasks" />
+                        </Route>
 
                         <Route exact path="/tabs/tasks">
                             <TasksScreen />
@@ -56,7 +58,7 @@ const Tabs = () => {
                             <DreamsScreen />
                         </Route>
 
-                        <Route path="/tabs/rewards">
+                        <Route exact path="/tabs/rewards">
                             <RewardsScreen />
                         </Route>
                     </IonRouterOutlet>
@@ -66,12 +68,11 @@ const Tabs = () => {
                             <IonIcon icon={checkmark} />
                             <IonLabel>Tasks</IonLabel>
                         </IonTabButton>
-
+                        s
                         <IonTabButton tab="dreams" href="/tabs/dreams">
                             <IonIcon icon={starOutline} />
                             <IonLabel>Dreams</IonLabel>
                         </IonTabButton>
-
                         <IonTabButton tab="rewards" href="/tabs/rewards">
                             <IonIcon icon={trophyOutline} />
                             <IonLabel>Rewards</IonLabel>
@@ -86,7 +87,7 @@ const Tabs = () => {
 export const Navigation: React.FC = () => {
     return (
         <IonRouterOutlet>
-            <Route path="/" exact={true}>
+            <Route exact path="/">
                 <Redirect to="/tabs" />
             </Route>
 
@@ -94,19 +95,19 @@ export const Navigation: React.FC = () => {
                 <Tabs />
             </Route>
 
-            <Route path="/add-task">
+            <Route path="/tasks/add">
                 <TaskEditScreen />
             </Route>
 
-            <Route path="/edit-task/:taskIterationId">
+            <Route path="/tasks/:taskIterationId">
                 <TaskEditScreen />
             </Route>
 
-            <Route path="/add-reward">
+            <Route path="/rewards/add">
                 <RewardEditScreen />
             </Route>
 
-            <Route path="/edit-reward/:rewardId">
+            <Route path="/rewards/:rewardId">
                 <RewardEditScreen />
             </Route>
         </IonRouterOutlet>
