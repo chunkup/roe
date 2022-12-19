@@ -57,23 +57,17 @@ const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formM
                     </IonListHeader>
 
                     <IonItem>
+                        <IonRadio value={TaskIterationImportanceEnum.High} className="ion-margin-end" color="danger" />
                         <IonLabel>High</IonLabel>
-                        <IonRadio value={TaskIterationImportanceEnum.High} color="danger" slot="start" />
-                    </IonItem>
 
-                    <IonItem>
+                        <IonRadio value={TaskIterationImportanceEnum.Medium} className="ion-margin-end" color="warning" />
                         <IonLabel>Medium</IonLabel>
-                        <IonRadio value={TaskIterationImportanceEnum.Medium} color="warning" slot="start" />
-                    </IonItem>
 
-                    <IonItem>
+                        <IonRadio value={TaskIterationImportanceEnum.Ordinary} className="ion-margin-end" color="primary" />
                         <IonLabel>Ordinary</IonLabel>
-                        <IonRadio value={TaskIterationImportanceEnum.Ordinary} color="primary" slot="start" />
-                    </IonItem>
 
-                    <IonItem>
+                        <IonRadio value={TaskIterationImportanceEnum.Low} className="ion-margin-end" color="medium" />
                         <IonLabel>Low</IonLabel>
-                        <IonRadio value={TaskIterationImportanceEnum.Low} color="medium" slot="start" />
                     </IonItem>
                 </IonRadioGroup>
             </IonList>
