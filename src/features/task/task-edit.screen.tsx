@@ -1,6 +1,6 @@
 import { IonInput, IonItem, IonLabel, IonList, IonListHeader, IonNote, IonRadio, IonRadioGroup, IonTextarea } from "@ionic/react";
 import { useHistory, useParams } from "react-router";
-import { FormProvider, useForm, UseFormReturn } from "react-hook-form";
+import { Controller, FormProvider, useForm, UseFormReturn } from "react-hook-form";
 
 import { TaskIterationImportanceEnum } from "./store/task-iteration-importance.enum";
 import EditScreen from "../../components/EditScreen";
@@ -8,15 +8,20 @@ import { useStore } from "../../store";
 
 import "../../theme/radio.css";
 
+// TODO: Improve date handling, processing MIN/MAX dates, etc
+
 type FormInputs = {
     title: string;
     description: string;
     importance: TaskIterationImportanceEnum;
+    date: string;
+    time: string;
 };
 
 const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formMethods }) => {
     const ionInvalidClass = (name: keyof FormInputs) =>
         formMethods.formState.isSubmitted && formMethods.getFieldState(name).error ? "ion-invalid" : "";
+    const dateValue = formMethods.watch("date");
 
     return (
         <FormProvider {...formMethods}>
@@ -72,6 +77,30 @@ const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formM
                     </IonItem>
                 </IonRadioGroup>
             </IonList>
+
+            <IonList>
+                <IonListHeader>
+                    <IonLabel>Notification</IonLabel>
+                </IonListHeader>
+
+                <IonItem>
+                    <IonLabel>Date</IonLabel>
+                    <Controller
+                        control={formMethods.control}
+                        name="date"
+                        render={({ field: { onChange, onBlur, value, name } }) => (
+                            <IonInput name={name} value={value} onIonChange={onChange} type="date" clearInput={true} />
+                        )}
+                    />
+                </IonItem>
+
+                {dateValue && (
+                    <IonItem>
+                        <IonLabel>Time</IonLabel>
+                        <IonInput {...formMethods.register("time")} type="time" clearInput={true} />
+                    </IonItem>
+                )}
+            </IonList>
         </FormProvider>
     );
 };
@@ -95,16 +124,20 @@ const TaskEditScreen: React.FC = () => {
             title: task?.title ?? "",
             description: task?.description ?? "",
             importance: taskIteration?.importance ?? TaskIterationImportanceEnum.Ordinary,
+            date: taskIteration?.date?.toISOString().split("T")[0] ?? undefined,
+            time: taskIteration?.date ? taskIteration.date.getHours() + ":" + taskIteration.date.getMinutes() : undefined,
         },
     });
 
     const onSubmit = (data: FormInputs) => {
+        const date = data.date ? new Date(data.date + " " + (data.time ?? "")) : undefined;
+
         if (task && taskIteration) {
             updateTask(task.id, { title: data.title, description: data.description });
-            updateTaskIteration(taskIteration.id, { importance: data.importance });
+            updateTaskIteration(taskIteration.id, { importance: data.importance, date });
         } else {
             const taskId = addTask({ title: data.title, description: data.description });
-            addTaskIteration({ taskId, importance: data.importance });
+            addTaskIteration({ taskId, importance: data.importance, date });
         }
 
         history.push("/tabs/tasks");
