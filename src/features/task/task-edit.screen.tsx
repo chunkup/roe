@@ -124,7 +124,9 @@ const TaskEditScreen: React.FC = () => {
             title: task?.title ?? "",
             description: task?.description ?? "",
             importance: taskIteration?.importance ?? TaskIterationImportanceEnum.Ordinary,
-            date: taskIteration?.date?.toISOString().split("T")[0] ?? undefined,
+            date: taskIteration?.date
+                ? taskIteration.date.getDay() + "-" + taskIteration.date.getMonth() + "-" + taskIteration.date.getFullYear()
+                : undefined,
             time: taskIteration?.date ? taskIteration.date.getHours() + ":" + taskIteration.date.getMinutes() : undefined,
         },
     });
