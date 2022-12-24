@@ -102,10 +102,10 @@ export function sortDreams(dreams: Dream[]): Dream[] {
 //         const iterations = get().taskIterationSlice.taskIterations.filter(iteration => iteration.taskId === task.id);
 
 //         iterations.forEach(iteration => {
-//           price += taskIterationImportanceEnumToPrice(iteration.importance);
+//           price += taskImportanceEnumToPrice(iteration.importance);
 
 //           if (iteration.completed) {
-//             completedPrice += taskIterationImportanceEnumToPrice(iteration.importance);
+//             completedPrice += taskImportanceEnumToPrice(iteration.importance);
 //           }
 //         })
 //       });

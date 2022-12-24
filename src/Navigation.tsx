@@ -99,7 +99,7 @@ export const Navigation: React.FC = () => {
                 <TaskEditScreen />
             </Route>
 
-            <Route path="/tasks/:taskIterationId">
+            <Route path="/tasks/:taskId">
                 <TaskEditScreen />
             </Route>
 

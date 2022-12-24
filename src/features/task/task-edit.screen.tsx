@@ -1,37 +1,51 @@
-import { IonInput, IonItem, IonLabel, IonList, IonListHeader, IonNote, IonRadio, IonRadioGroup, IonTextarea } from "@ionic/react";
+import {
+    IonInput,
+    IonItem,
+    IonLabel,
+    IonList,
+    IonListHeader,
+    IonNote,
+    IonRadio,
+    IonRadioGroup,
+    IonSelect,
+    IonSelectOption,
+    IonTextarea,
+} from "@ionic/react";
 import { useHistory, useParams } from "react-router";
 import { Controller, FormProvider, useForm, UseFormReturn } from "react-hook-form";
 
-import { TaskIterationImportanceEnum } from "./store/task-iteration-importance.enum";
+import { TaskImportanceEnum } from "./store/task-importance.enum";
 import EditScreen from "../../components/EditScreen";
 import { useStore } from "../../store";
 
 import "../../theme/radio.css";
+import { TaskRepeatKindEnum } from "./store/task-repeat-kind.enum";
 
 // TODO: Improve date handling, processing MIN/MAX dates, etc
 
 type FormInputs = {
     title: string;
     description: string;
-    importance: TaskIterationImportanceEnum;
+    importance: TaskImportanceEnum;
     date: string;
     time: string;
+    repeatKind: TaskRepeatKindEnum;
+    repeatTimes: number;
 };
 
-const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formMethods }) => {
-    const ionInvalidClass = (name: keyof FormInputs) =>
-        formMethods.formState.isSubmitted && formMethods.getFieldState(name).error ? "ion-invalid" : "";
-    const dateValue = formMethods.watch("date");
+const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: number }> = ({ form, minRepeatTimes }) => {
+    const ionInvalidClass = (name: keyof FormInputs) => (form.formState.isSubmitted && form.getFieldState(name).error ? "ion-invalid" : "");
+    const dateValue = form.watch("date");
 
     return (
-        <FormProvider {...formMethods}>
+        <FormProvider {...form}>
             <IonList>
                 <IonListHeader>
                     <IonLabel>Title</IonLabel>
                 </IonListHeader>
 
                 <IonItem className={ionInvalidClass("title")}>
-                    <IonInput {...formMethods.register("title", { required: true })} />
+                    <IonInput {...form.register("title", { required: true })} />
                     <IonNote slot="error" color="danger">
                         Required
                     </IonNote>
@@ -42,31 +56,31 @@ const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formM
                 </IonListHeader>
 
                 <IonItem>
-                    <IonTextarea {...formMethods.register("description")} />
+                    <IonTextarea {...form.register("description")} />
                 </IonItem>
             </IonList>
 
             <IonList className={ionInvalidClass("importance")}>
                 <IonRadioGroup
-                    {...formMethods.register("importance", { required: true })}
-                    value={formMethods.getValues("importance")}
-                    onIonChange={(e) => formMethods.setValue("importance", e.detail.value)}
+                    {...form.register("importance", { required: true })}
+                    value={form.getValues("importance")}
+                    onIonChange={(e) => form.setValue("importance", e.detail.value)}
                 >
                     <IonListHeader>
                         <IonLabel>Importance</IonLabel>
                     </IonListHeader>
 
                     <IonItem>
-                        <IonRadio value={TaskIterationImportanceEnum.High} className="ion-margin-end" color="danger" />
+                        <IonRadio value={TaskImportanceEnum.High} className="ion-margin-end" color="danger" />
                         <IonLabel>High</IonLabel>
 
-                        <IonRadio value={TaskIterationImportanceEnum.Medium} className="ion-margin-end" color="warning" />
+                        <IonRadio value={TaskImportanceEnum.Medium} className="ion-margin-end" color="warning" />
                         <IonLabel>Medium</IonLabel>
 
-                        <IonRadio value={TaskIterationImportanceEnum.Ordinary} className="ion-margin-end" color="primary" />
+                        <IonRadio value={TaskImportanceEnum.Ordinary} className="ion-margin-end" color="primary" />
                         <IonLabel>Ordinary</IonLabel>
 
-                        <IonRadio value={TaskIterationImportanceEnum.Low} className="ion-margin-end" color="medium" />
+                        <IonRadio value={TaskImportanceEnum.Low} className="ion-margin-end" color="medium" />
                         <IonLabel>Low</IonLabel>
                     </IonItem>
                 </IonRadioGroup>
@@ -80,9 +94,9 @@ const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formM
                 <IonItem>
                     <IonLabel>Date</IonLabel>
                     <Controller
-                        control={formMethods.control}
+                        control={form.control}
                         name="date"
-                        render={({ field: { onChange, onBlur, value, name } }) => (
+                        render={({ field: { onChange, value, name } }) => (
                             <IonInput name={name} value={value} onIonChange={onChange} type="date" clearInput={true} />
                         )}
                     />
@@ -91,24 +105,55 @@ const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formM
                 {dateValue && (
                     <IonItem>
                         <IonLabel>Time</IonLabel>
-                        <IonInput {...formMethods.register("time")} type="time" clearInput={true} />
+                        <IonInput {...form.register("time")} type="time" clearInput={true} />
                     </IonItem>
                 )}
+
+                <IonListHeader>
+                    <IonLabel>Repeat</IonLabel>
+                </IonListHeader>
+
+                <IonItem>
+                    <IonLabel>Kind</IonLabel>
+                    <Controller
+                        control={form.control}
+                        name="repeatKind"
+                        render={({ field: { onChange, value, name } }) => (
+                            <IonSelect name={name} value={value} onIonChange={onChange} placeholder="Repeat kind" disabled={!dateValue}>
+                                <IonSelectOption value={TaskRepeatKindEnum.Daily}>Daily</IonSelectOption>
+                                <IonSelectOption value={TaskRepeatKindEnum.Weekdays}>Weekdays</IonSelectOption>
+                                <IonSelectOption value={TaskRepeatKindEnum.Weekends}>Weekends</IonSelectOption>
+                                <IonSelectOption value={TaskRepeatKindEnum.Weekly}>Weekly</IonSelectOption>
+                                <IonSelectOption value={TaskRepeatKindEnum.Monthly}>Monthly</IonSelectOption>
+                                <IonSelectOption value={TaskRepeatKindEnum.Yearly}>Yearly</IonSelectOption>
+                            </IonSelect>
+                        )}
+                    />
+                </IonItem>
+
+                <IonItem className={ionInvalidClass("repeatTimes")}>
+                    <IonLabel>Times</IonLabel>
+                    <Controller
+                        control={form.control}
+                        name="repeatTimes"
+                        rules={{ min: minRepeatTimes }}
+                        render={({ field: { onChange, value, name } }) => (
+                            <IonInput name={name} value={value} onIonChange={onChange} type="number" min={minRepeatTimes} />
+                        )}
+                    />
+                    <IonNote slot="error" color="danger">
+                        Cannot be negative or lower than number of completed iterations
+                    </IonNote>
+                </IonItem>
             </IonList>
         </FormProvider>
     );
 };
 
 const TaskEditScreen: React.FC = () => {
-    const params = useParams<{ taskIterationId: string }>();
+    const params = useParams<{ taskId: string }>();
     const history = useHistory();
-    const taskIteration = useStore((state) =>
-        state.taskIterationSlice.taskIterations.find((iteration) => iteration.id === params.taskIterationId)
-    );
-    const addTaskIteration = useStore((state) => state.taskIterationSlice.add);
-    const updateTaskIteration = useStore((state) => state.taskIterationSlice.update);
-    const removeTaskIteration = useStore((state) => state.taskIterationSlice.remove);
-    const task = useStore((state) => state.taskSlice.tasks.find((task) => task.id === taskIteration?.taskId));
+    const task = useStore((state) => state.taskSlice.tasks.find((task) => task.id === params?.taskId));
     const addTask = useStore((state) => state.taskSlice.add);
     const updateTask = useStore((state) => state.taskSlice.update);
     const removeTask = useStore((state) => state.taskSlice.remove);
@@ -117,44 +162,61 @@ const TaskEditScreen: React.FC = () => {
         defaultValues: {
             title: task?.title ?? "",
             description: task?.description ?? "",
-            importance: taskIteration?.importance ?? TaskIterationImportanceEnum.Ordinary,
-            date: taskIteration?.date
-                ? taskIteration.date.getDay() + "-" + taskIteration.date.getMonth() + "-" + taskIteration.date.getFullYear()
+            importance: task?.importance ?? TaskImportanceEnum.Ordinary,
+            date: task?.date
+                ? task.date.getDay() + "-" + task.date.getMonth() + "-" + task.date.getFullYear()
                 : undefined,
-            time: taskIteration?.date ? taskIteration.date.getHours() + ":" + taskIteration.date.getMinutes() : undefined,
+            time: task?.date ? task.date.getHours() + ":" + task.date.getMinutes() : undefined,
+            repeatKind: task?.repeatKind ?? undefined,
+            repeatTimes: task?.repeatTimes ?? 1,
         },
     });
 
     const onSubmit = (data: FormInputs) => {
         const date = data.date ? new Date(data.date + " " + (data.time ?? "")) : undefined;
 
-        if (task && taskIteration) {
-            updateTask(task.id, { title: data.title, description: data.description });
-            updateTaskIteration(taskIteration.id, { importance: data.importance, date });
+        if (task) {
+            updateTask(task.id, {
+                title: data.title,
+                description: data.description,
+                repeatKind: data.repeatKind,
+                repeatTimes: +data.repeatTimes,
+                importance: data.importance,
+                date: date,
+            });
         } else {
-            const taskId = addTask({ title: data.title, description: data.description });
-            addTaskIteration({ taskId, importance: data.importance, date });
+            // TODO: Process dream binding
+
+            addTask({
+                title: data.title,
+                description: data.description,
+                repeatKind: data.repeatKind,
+                repeatTimes: +data.repeatTimes,
+                importance: data.importance,
+                date: date
+            });
         }
 
         history.push("/tabs/tasks");
     };
 
     const onRemove = () => {
-        if (task && taskIteration) {
-            removeTaskIteration(taskIteration.id);
+        if (task) {
             removeTask(task.id);
         }
 
         history.push("/tabs/tasks");
     };
 
+    const minRepeatTimes = task?.index ? task.index + 1 : 1;
+
     return (
         <EditScreen
             id="edit-task"
             title="Task Edit"
-            form={<Form formMethods={formMethods} />}
+            form={<Form form={formMethods} minRepeatTimes={minRepeatTimes} />}
             fabSaveOnClick={formMethods.handleSubmit(onSubmit)}
-            fabRemoveOnClick={task?.completedTimes === 0 ? onRemove : undefined}
+            fabRemoveOnClick={onRemove}
         />
     );
 };

@@ -1,30 +1,29 @@
 import { IonCheckbox, IonIcon, IonItem, IonLabel, IonList } from "@ionic/react";
 import { starOutline } from "ionicons/icons";
 
-import { importanceToColor } from "./store/task-iteration-importance.enum";
-import { TaskIteration } from "./store/task-iteration.store";
+import { importanceToColor } from "./store/task-importance.enum";
 import HomeScreen from "../../components/HomeScreen";
 import { useStore } from "../../store";
+import { Task } from "./store/task.store";
 
 import "../../theme/checkbox.css";
 
-const TaskIterationItem = ({ taskIteration }: { taskIteration: TaskIteration }) => {
-    const toggleTaskIteration = useStore((state) => state.taskIterationSlice.toggle);
-    const task = useStore((state) => state.taskSlice.tasks.find((task) => task.id === taskIteration.taskId));
+const TaskItem = ({ task }: { task: Task }) => {
+    const toggleTask = useStore((state) => state.taskSlice.toggle);
 
     if (!task) {
         return null;
     }
 
     return (
-        <IonItem routerLink={"/tasks/" + taskIteration.id}>
+        <IonItem routerLink={"/tasks/" + task.id}>
             <IonCheckbox
                 slot="start"
-                checked={taskIteration.completed}
+                checked={task.completed}
                 onClick={(e) => e.stopPropagation()}
-                onIonChange={() => toggleTaskIteration(taskIteration.id)}
-                color={importanceToColor(taskIteration.importance)}
-                className={importanceToColor(taskIteration.importance)}
+                onIonChange={() => toggleTask(task.id)}
+                color={importanceToColor(task.importance)}
+                className={importanceToColor(task.importance)}
             ></IonCheckbox>
 
             <IonLabel>
@@ -37,20 +36,20 @@ const TaskIterationItem = ({ taskIteration }: { taskIteration: TaskIteration }) 
     );
 };
 
-const TaskIterationsList = () => {
-    const taskIterations = useStore((state) => state.taskIterationSlice.taskIterations);
+const TasksList = () => {
+    const tasks = useStore((state) => state.taskSlice.tasks);
 
     return (
         <IonList>
-            {taskIterations.map((taskIteration) => (
-                <TaskIterationItem key={taskIteration.id} taskIteration={taskIteration} />
+            {tasks.map((task) => (
+                <TaskItem key={task.id} task={task} />
             ))}
         </IonList>
     );
 };
 
 const TasksScreen: React.FC = () => {
-    return <HomeScreen id="tasks-screen" title="Tasks" list={<TaskIterationsList />} fabRouterLink="/tasks/add" />;
+    return <HomeScreen id="tasks-screen" title="Tasks" list={<TasksList />} fabRouterLink="/tasks/add" />;
 };
 
 export default TasksScreen;
