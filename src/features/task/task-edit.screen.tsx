@@ -1,13 +1,9 @@
 import {
-    IonButton,
-    IonDatetime,
-    IonDatetimeButton,
     IonInput,
     IonItem,
     IonLabel,
     IonList,
     IonListHeader,
-    IonModal,
     IonNote,
     IonRadio,
     IonRadioGroup,
@@ -19,11 +15,12 @@ import { useEffect } from "react";
 import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { useHistory, useParams } from "react-router";
 
-import EditScreen from "../../components/EditScreen";
+import { EditScreen } from "../../components/EditScreen";
 import { useStore } from "../../store";
 import { TaskImportanceEnum } from "./store/task-importance.enum";
 import { TaskRepeatKindEnum } from "./store/task-repeat-kind.enum";
 
+import { DateTimeInput } from "../../components/DateTimeInput";
 import "../../theme/radio.css";
 
 // TODO: Improve processing MIN/MAX dates, etc
@@ -103,28 +100,14 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
                         control={form.control}
                         name="date"
                         render={({ field: { onChange, value, name } }) => (
-                            <>
-                                <IonDatetimeButton datetime="date">
-                                    {!value && <IonLabel slot="date-target">---- -- --</IonLabel>}
-                                </IonDatetimeButton>
-
-                                <IonModal keepContentsMounted={true}>
-                                    <IonDatetime
-                                        id="date"
-                                        name={name}
-                                        value={value}
-                                        presentation="date"
-                                        min="2000-01-01T00:00:00.000Z"
-                                        onIonChange={(e) => onChange(e.detail.value)}
-                                    ></IonDatetime>
-                                </IonModal>
-
-                                {value && (
-                                    <IonButton fill="clear" onClick={() => onChange(null)}>
-                                        Clear
-                                    </IonButton>
-                                )}
-                            </>
+                            <DateTimeInput
+                                presentation="date"
+                                name={name}
+                                value={value}
+                                onChange={onChange}
+                                placeholder="Select date"
+                                min="2000-01-01T00:00:00.000Z"
+                            />
                         )}
                     />
                 </IonItem>
@@ -136,28 +119,14 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
                             control={form.control}
                             name="time"
                             render={({ field: { onChange, value, name } }) => (
-                                <>
-                                    <IonDatetimeButton datetime="time">
-                                        {!value && <IonLabel slot="time-target">--:--</IonLabel>}
-                                    </IonDatetimeButton>
-
-                                    <IonModal keepContentsMounted={true}>
-                                        <IonDatetime
-                                            id="time"
-                                            name={name}
-                                            value={value}
-                                            presentation="time"
-                                            min="2000-01-01T00:00:00.000Z"
-                                            onIonChange={(e) => onChange(e.detail.value)}
-                                        ></IonDatetime>
-                                    </IonModal>
-
-                                    {value && (
-                                        <IonButton fill="clear" onClick={() => onChange(null)}>
-                                            Clear
-                                        </IonButton>
-                                    )}
-                                </>
+                                <DateTimeInput
+                                    presentation="time"
+                                    name={name}
+                                    value={value}
+                                    onChange={onChange}
+                                    placeholder="Select time"
+                                    min="2000-01-01T00:00:00.000Z"
+                                />
                             )}
                         />
                     </IonItem>
@@ -174,13 +143,11 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
                         name="repeatKind"
                         render={({ field: { onChange, value, name } }) => (
                             <IonSelect name={name} value={value} onIonChange={onChange} placeholder="Repeat kind" interface="action-sheet">
-                                <IonSelectOption value={TaskRepeatKindEnum.None}>None</IonSelectOption>
-                                <IonSelectOption value={TaskRepeatKindEnum.Daily}>Daily</IonSelectOption>
-                                <IonSelectOption value={TaskRepeatKindEnum.Weekdays}>Weekdays</IonSelectOption>
-                                <IonSelectOption value={TaskRepeatKindEnum.Weekends}>Weekends</IonSelectOption>
-                                <IonSelectOption value={TaskRepeatKindEnum.Weekly}>Weekly</IonSelectOption>
-                                <IonSelectOption value={TaskRepeatKindEnum.Monthly}>Monthly</IonSelectOption>
-                                <IonSelectOption value={TaskRepeatKindEnum.Yearly}>Yearly</IonSelectOption>
+                                {Object.values(TaskRepeatKindEnum).map((kind) => (
+                                    <IonSelectOption key={kind} value={kind}>
+                                        {kind}
+                                    </IonSelectOption>
+                                ))}
                             </IonSelect>
                         )}
                     />
@@ -199,7 +166,7 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
                                 onIonChange={onChange}
                                 type="number"
                                 min={minRepeatTimes}
-                                disabled={repeatKindValue && repeatKindValue === TaskRepeatKindEnum.None}
+                                disabled={!repeatKindValue || repeatKindValue === TaskRepeatKindEnum.None}
                             />
                         )}
                     />
@@ -212,7 +179,7 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
     );
 };
 
-const TaskEditScreen: React.FC = () => {
+export const TaskEditScreen: React.FC = () => {
     const params = useParams<{ taskId: string }>();
     const history = useHistory();
     const form = useForm<FormInputs>();
@@ -240,11 +207,8 @@ const TaskEditScreen: React.FC = () => {
 
         if (task) {
             updateTask(task.id, {
+                ...data,
                 index: task.index,
-                title: data.title,
-                description: data.description,
-                repeatKind: data.repeatKind,
-                repeatTimes: +data.repeatTimes,
                 importance: data.importance,
                 date: date ? +date : undefined,
                 time: date && time ? +time : undefined,
@@ -253,12 +217,8 @@ const TaskEditScreen: React.FC = () => {
             // TODO: Process dream binding
 
             addTask({
+                ...data,
                 index: 0,
-                title: data.title,
-                description: data.description,
-                repeatKind: data.repeatKind,
-                repeatTimes: +data.repeatTimes,
-                importance: data.importance,
                 date: date ? +date : undefined,
                 time: date && time ? +time : undefined,
             });
@@ -285,5 +245,3 @@ const TaskEditScreen: React.FC = () => {
         />
     );
 };
-
-export default TaskEditScreen;

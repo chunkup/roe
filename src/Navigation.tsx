@@ -15,18 +15,18 @@ import {
     IonTitle,
     IonToolbar,
 } from "@ionic/react";
-import { Redirect, Route } from "react-router-dom";
-import { useLocation } from "react-router";
 import { checkmark, starOutline, trophyOutline } from "ionicons/icons";
+import { useLocation } from "react-router";
+import { Redirect, Route } from "react-router-dom";
 
-import TasksScreen from "./features/task/tasks.screen";
-import DreamsScreen from "./features/dream/dreams.screen";
-import RewardsScreen from "./features/reward/rewards.screen";
-import TaskEditScreen from "./features/task/task-edit.screen";
-import RewardEditScreen from "./features/reward/reward-edit.screen";
-import { TaskPeriodEnum } from "./features/task/store/task-period.enum";
-import { useStore } from "./store";
 import { useRef } from "react";
+import { DreamsScreen } from "./features/dream/dreams.screen";
+import { RewardEditScreen } from "./features/reward/reward-edit.screen";
+import { RewardsScreen } from "./features/reward/rewards.screen";
+import { TaskPeriodEnum } from "./features/task/store/task-period.enum";
+import { TaskEditScreen } from "./features/task/task-edit.screen";
+import { TasksScreen } from "./features/task/tasks.screen";
+import { useStore } from "./store";
 
 const Drawer: React.FC = () => {
     const menu = useRef<HTMLIonMenuElement>(null);
@@ -36,7 +36,7 @@ const Drawer: React.FC = () => {
     const onPeriodItemClick = (period: TaskPeriodEnum) => {
         setTaskPeriod(period);
         menu.current?.close();
-    }
+    };
 
     return (
         <IonMenu ref={menu} side="start" menuId="drawer" contentId="tabs">
@@ -55,15 +55,17 @@ const Drawer: React.FC = () => {
                             </IonItemDivider>
 
                             {Object.values(TaskPeriodEnum).map((period) => (
-                                <IonItem button key={period} onClick={() => onPeriodItemClick(period)}>{period}</IonItem>
+                                <IonItem button key={period} onClick={() => onPeriodItemClick(period)}>
+                                    {period}
+                                </IonItem>
                             ))}
                         </IonItemGroup>
                     </IonList>
                 )}
             </IonContent>
         </IonMenu>
-    )
-}
+    );
+};
 
 const Tabs = () => {
     return (
@@ -141,5 +143,3 @@ export const Navigation: React.FC = () => {
         </IonRouterOutlet>
     );
 };
-
-export default Navigation;

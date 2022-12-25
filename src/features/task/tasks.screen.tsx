@@ -1,9 +1,9 @@
 import { IonCheckbox, IonIcon, IonItem, IonLabel, IonList } from "@ionic/react";
 import { starOutline } from "ionicons/icons";
 
-import { importanceToColor } from "./store/task-importance.enum";
-import HomeScreen from "../../components/HomeScreen";
+import { HomeScreen } from "../../components/HomeScreen";
 import { useStore } from "../../store";
+import { importanceToColor } from "./store/task-importance.enum";
 import { filterTasks, sortTasks, Task } from "./store/task.store";
 
 import "../../theme/checkbox.css";
@@ -50,10 +50,8 @@ const TasksList = () => {
     );
 };
 
-const TasksScreen: React.FC = () => {
+export const TasksScreen: React.FC = () => {
     const taskPeriod = useStore((state) => state.taskSlice.taskPeriod);
 
     return <HomeScreen id="tasks-screen" title={"Tasks \\ " + taskPeriod} list={<TasksList />} fabRouterLink="/tasks/add" />;
 };
-
-export default TasksScreen;

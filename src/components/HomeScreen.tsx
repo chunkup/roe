@@ -8,37 +8,35 @@ import {
     IonMenuButton,
     IonPage,
     IonTitle,
-    IonToolbar
-} from '@ionic/react';
-import { addCircleOutline } from 'ionicons/icons';
+    IonToolbar,
+} from "@ionic/react";
+import { addCircleOutline } from "ionicons/icons";
 
 interface HomeScreenProps {
-    id: string,
-    title: string,
-    list?: any,
-    fabRouterLink?: string,
-    toolbarRight?: any,
+    id: string;
+    title: string;
+    list?: any;
+    fabRouterLink?: string;
+    toolbarRight?: any;
 }
 
-const HomeScreen: React.FC<HomeScreenProps> = ({ id, title, list, fabRouterLink, toolbarRight }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ id, title, list, fabRouterLink, toolbarRight }) => {
     return (
         <IonPage id={id}>
             <IonHeader>
-                <IonToolbar >
+                <IonToolbar>
                     <IonButtons slot="start">
                         <IonMenuButton />
                     </IonButtons>
 
-                    <IonTitle>{ title } </IonTitle>
+                    <IonTitle>{title} </IonTitle>
 
-                    <IonButtons slot="end">
-                        { toolbarRight }
-                    </IonButtons>
+                    <IonButtons slot="end">{toolbarRight}</IonButtons>
                 </IonToolbar>
             </IonHeader>
 
             <IonContent fullscreen={true}>
-                { list }
+                {list}
 
                 <IonFab vertical="bottom" horizontal="center" slot="fixed">
                     <IonFabButton routerLink={fabRouterLink}>
@@ -49,5 +47,3 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ id, title, list, fabRouterLink,
         </IonPage>
     );
 };
-
-export default HomeScreen;

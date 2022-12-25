@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { useHistory, useParams } from "react-router";
 
-import EditScreen from "../../components/EditScreen";
+import { EditScreen } from "../../components/EditScreen";
 import { useStore } from "../../store";
 
 type FormInputs = {
@@ -54,7 +54,7 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs> }> = ({ form }) => {
     );
 };
 
-const RewardEditScreen: React.FC = () => {
+export const RewardEditScreen: React.FC = () => {
     const params = useParams<{ rewardId: string }>();
     const history = useHistory();
     const form = useForm<FormInputs>();
@@ -99,5 +99,3 @@ const RewardEditScreen: React.FC = () => {
         />
     );
 };
-
-export default RewardEditScreen;

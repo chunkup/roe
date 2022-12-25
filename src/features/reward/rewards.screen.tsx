@@ -1,6 +1,6 @@
 import { IonCheckbox, IonIcon, IonItem, IonLabel, IonList } from "@ionic/react";
 import { starOutline } from "ionicons/icons";
-import HomeScreen from "../../components/HomeScreen";
+import { HomeScreen } from "../../components/HomeScreen";
 import { useStore } from "../../store";
 import { Reward } from "./store/reward.store";
 
@@ -46,7 +46,7 @@ const RewardsList = () => {
     );
 };
 
-const RewardsScreen: React.FC = () => {
+export const RewardsScreen: React.FC = () => {
     const userBalance = useStore((state) => state.userSlice.balance);
 
     return (
@@ -54,10 +54,8 @@ const RewardsScreen: React.FC = () => {
             id="rewards-screen"
             title="Rewards"
             list={<RewardsList />}
-            toolbarRight={<IonLabel class="ion-margin-horizontal">{userBalance}</IonLabel>}
+            toolbarRight={<IonLabel className="ion-margin-horizontal">{userBalance}</IonLabel>}
             fabRouterLink="/rewards/add"
         />
     );
 };
-
-export default RewardsScreen;
