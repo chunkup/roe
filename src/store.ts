@@ -6,7 +6,7 @@ import { createDreamStoreSlice, DreamStoreSlice } from "./features/dream/store/d
 import { createRewardStoreSlice, RewardStoreSlice } from "./features/reward/store/reward.store";
 import { createTaskStoreSlice, TaskStoreSlice } from "./features/task/store/task.store";
 import { createUserStoreSlice, UserStoreSlice } from "./features/user/store/user.store";
-import { storage } from "./storage";
+import { IonicStorage } from "./storage";
 
 export type Store = TaskStoreSlice & DreamStoreSlice & RewardStoreSlice & UserStoreSlice;
 
@@ -22,11 +22,7 @@ export const useStore = create<Store>()(
         })),
         {
             name: "store",
-            getStorage: () => ({
-                getItem: (key: string) => storage.get(key),
-                setItem: (key: string, value: string) => storage.set(key, value),
-                removeItem: (key: string) => storage.remove(key),
-            }),
+            getStorage: () => IonicStorage,
             merge: (oldState: any, newState: any) => deepMerge(newState, oldState, { arrayMerge: (a, b) => b }),
         }
     )

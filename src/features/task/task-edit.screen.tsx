@@ -13,6 +13,7 @@ import {
 } from "@ionic/react";
 import { useHistory, useParams } from "react-router";
 import { Controller, FormProvider, useForm, UseFormReturn } from "react-hook-form";
+import dayjs from "dayjs";
 
 import { TaskImportanceEnum } from "./store/task-importance.enum";
 import EditScreen from "../../components/EditScreen";
@@ -154,6 +155,7 @@ const TaskEditScreen: React.FC = () => {
     const params = useParams<{ taskId: string }>();
     const history = useHistory();
     const task = useStore((state) => state.taskSlice.tasks.find((task) => task.id === params?.taskId));
+    const taskDate = task?.date ? new Date(task.date) : undefined;
     const addTask = useStore((state) => state.taskSlice.add);
     const updateTask = useStore((state) => state.taskSlice.update);
     const removeTask = useStore((state) => state.taskSlice.remove);
@@ -163,10 +165,8 @@ const TaskEditScreen: React.FC = () => {
             title: task?.title ?? "",
             description: task?.description ?? "",
             importance: task?.importance ?? TaskImportanceEnum.Ordinary,
-            date: task?.date
-                ? task.date.getDay() + "-" + task.date.getMonth() + "-" + task.date.getFullYear()
-                : undefined,
-            time: task?.date ? task.date.getHours() + ":" + task.date.getMinutes() : undefined,
+            date: taskDate ? dayjs(taskDate).format("DD-MM-YYYY") : undefined,
+            time: taskDate ? dayjs(taskDate).format("HH:mm") : undefined,
             repeatKind: task?.repeatKind ?? undefined,
             repeatTimes: task?.repeatTimes ?? 1,
         },
@@ -182,7 +182,7 @@ const TaskEditScreen: React.FC = () => {
                 repeatKind: data.repeatKind,
                 repeatTimes: +data.repeatTimes,
                 importance: data.importance,
-                date: date,
+                date: date ? +date : undefined,
             });
         } else {
             // TODO: Process dream binding
@@ -193,7 +193,7 @@ const TaskEditScreen: React.FC = () => {
                 repeatKind: data.repeatKind,
                 repeatTimes: +data.repeatTimes,
                 importance: data.importance,
-                date: date
+                date: date ? +date : undefined,
             });
         }
 

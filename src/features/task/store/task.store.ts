@@ -19,21 +19,38 @@ export interface Task {
     repeatTimes: number;
     completed: boolean;
     importance: TaskImportanceEnum;
-    date?: Date;
-    completedDate?: Date;
+    date?: number;
+    completedDate?: number;
 }
 
-export type TaskAdd = Pick<Task, "title"> & Partial<Pick<Task, "dreamId" | "description" | "repeatKind" | "repeatTimes" | "index" | "date" | "importance">>;
+export type TaskAdd = Pick<Task, "title" | "importance"> & Partial<Pick<Task, "dreamId" | "description" | "repeatKind" | "repeatTimes" | "index" | "date">>;
 export type TaskUpdate = Partial<Pick<Task, "title" | "description" | "repeatKind" | "repeatTimes" | "importance" | "date">>;
 
 export interface TaskStoreSlice {
     taskSlice: {
         tasks: Task[];
-        add: (taskEditable: TaskAdd) => string;
+        add: (taskEditable: TaskAdd) => void;
         remove: (taskId: string) => void;
         update: (taskId: string, taskEditable: TaskUpdate) => void;
         toggle: (taskId: string) => void;
     };
+}
+
+function add(state: Store, taskEditable: TaskAdd): void {
+    const taskId = nanoid();
+
+    state.taskSlice.tasks.push({
+        id: taskId,
+        index: taskEditable.index ?? 0,
+        dreamId: taskEditable.dreamId,
+        title: taskEditable.title,
+        description: taskEditable.description,
+        importance: taskEditable.importance ?? TaskImportanceEnum.Ordinary,
+        repeatKind: taskEditable.repeatKind ?? TaskRepeatKindEnum.None,
+        repeatTimes: taskEditable.repeatTimes ?? 1,
+        date: taskEditable.date,
+        completed: false,
+    });
 }
 
 export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSlice> = (set) => ({
@@ -41,23 +58,9 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
         tasks: [],
 
         add: (taskEditable) => {
-            const taskId = nanoid();
-
             set((state) => {
-                state.taskSlice.tasks.push({
-                    id: taskId,
-                    index: taskEditable.index ?? 0,
-                    dreamId: taskEditable.dreamId,
-                    title: taskEditable.title,
-                    description: taskEditable.description,
-                    importance: taskEditable.importance ?? TaskImportanceEnum.Ordinary,
-                    repeatKind: taskEditable.repeatKind ?? TaskRepeatKindEnum.None,
-                    repeatTimes: taskEditable.repeatTimes ?? 1,
-                    completed: false,
-                });
+                add(state, taskEditable)
             });
-
-            return taskId;
         },
 
         remove: (taskId) =>
@@ -80,7 +83,17 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
                 task.importance = taskEditable.importance ?? task.importance;
                 task.date = taskEditable.date ?? task.date;
 
-                // TODO: If current iteration is last and completed and new repeatTimes is higher add new iteration
+                if (task.completed && taskEditable.repeatTimes && taskEditable.repeatTimes > task.repeatTimes) {
+                    add(state, {
+                        ...task,
+                        index: task.repeatTimes,
+                    });
+
+                    task.dreamId = undefined;
+                    task.repeatKind = TaskRepeatKindEnum.None;
+                    task.repeatTimes = 1;
+                    task.index = 0;
+                }
             }),
 
         toggle: (taskId: string) =>
@@ -92,7 +105,7 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
                 }
 
                 task.completed = !task.completed;
-                task.completedDate = task.completed ? new Date() : undefined;
+                task.completedDate = task.completed ? +new Date() : undefined;
 
                 adjustUserBalance(state, priceToNumber(importanceToPrice(task.importance)) * (task.completed ? 1 : -1));
 
@@ -100,7 +113,17 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
                     tryCompleteDream(state, task.dreamId);
                 }
 
-                // TODO: Process next task iteration if needed
+                if (task.completed && task.repeatTimes > task.index + 1) {
+                    add(state, {
+                        ...task,
+                        index: task.index + 1
+                    });
+
+                    task.dreamId = undefined;
+                    task.repeatKind = TaskRepeatKindEnum.None;
+                    task.repeatTimes = 1;
+                    task.index = 0;
+                }
             }),
     },
 });
@@ -112,28 +135,34 @@ export function filterTasks(tasks: Task[], period: TaskPeriodEnum): Task[] {
     switch (period) {
         case TaskPeriodEnum.Today:
             periodFilterFn = (task: Task) => {
+                const taskDate = task.date ? new Date(task.date) : undefined;
+
                 return (
-                    now.getFullYear() === task.date?.getFullYear() &&
-                    now.getMonth() === task.date?.getMonth() &&
-                    now.getDate() === task.date?.getDate()
+                    now.getFullYear() === taskDate?.getFullYear() &&
+                    now.getMonth() === taskDate?.getMonth() &&
+                    now.getDate() === taskDate?.getDate()
                 );
             };
             break;
         case TaskPeriodEnum.Tomorrow:
             periodFilterFn = (task: Task) => {
+                const taskDate = task.date ? new Date(task.date) : undefined;
+
                 return (
-                    now.getFullYear() === task.date?.getFullYear() &&
-                    now.getMonth() === task.date?.getMonth() &&
-                    now.getDate() + 1 === task.date?.getDate()
+                    now.getFullYear() === taskDate?.getFullYear() &&
+                    now.getMonth() === taskDate?.getMonth() &&
+                    now.getDate() + 1 === taskDate?.getDate()
                 );
             };
             break;
         case TaskPeriodEnum.Upcoming:
             periodFilterFn = (task: Task) => {
+                const taskDate = task.date ? new Date(task.date) : undefined;
+
                 return (
-                    now.getFullYear() === task.date?.getFullYear() &&
-                    now.getMonth() === task.date?.getMonth() &&
-                    now.getDate() + 1 < task.date?.getDate()
+                    now.getFullYear() === taskDate?.getFullYear() &&
+                    now.getMonth() === taskDate?.getMonth() &&
+                    now.getDate() + 1 < taskDate?.getDate()
                 );
             };
             break;
