@@ -15,17 +15,18 @@ import {
     IonSelectOption,
     IonTextarea,
 } from "@ionic/react";
+import { useEffect } from "react";
+import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { useHistory, useParams } from "react-router";
-import { Controller, FormProvider, useForm, UseFormReturn } from "react-hook-form";
 
-import { TaskImportanceEnum } from "./store/task-importance.enum";
 import EditScreen from "../../components/EditScreen";
 import { useStore } from "../../store";
-
-import "../../theme/radio.css";
+import { TaskImportanceEnum } from "./store/task-importance.enum";
 import { TaskRepeatKindEnum } from "./store/task-repeat-kind.enum";
 
-// TODO: Improve date handling, processing MIN/MAX dates, etc
+import "../../theme/radio.css";
+
+// TODO: Improve processing MIN/MAX dates, etc
 
 type FormInputs = {
     title: string;
@@ -43,7 +44,7 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
     const repeatKindValue = form.watch("repeatKind");
 
     return (
-        <FormProvider {...form}>
+        <form>
             <IonList>
                 <IonListHeader>
                     <IonLabel>Title</IonLabel>
@@ -119,10 +120,7 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
                                 </IonModal>
 
                                 {value && (
-                                    <IonButton
-                                        fill="clear"
-                                        onClick={() => onChange(null)}
-                                    >
+                                    <IonButton fill="clear" onClick={() => onChange(null)}>
                                         Clear
                                     </IonButton>
                                 )}
@@ -210,29 +208,31 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
                     </IonNote>
                 </IonItem>
             </IonList>
-        </FormProvider>
+        </form>
     );
 };
 
 const TaskEditScreen: React.FC = () => {
     const params = useParams<{ taskId: string }>();
     const history = useHistory();
+    const form = useForm<FormInputs>();
     const task = useStore((state) => state.taskSlice.tasks.find((task) => task.id === params?.taskId));
     const addTask = useStore((state) => state.taskSlice.add);
     const updateTask = useStore((state) => state.taskSlice.update);
     const removeTask = useStore((state) => state.taskSlice.remove);
 
-    const formMethods = useForm<FormInputs>({
-        defaultValues: {
+    // TODO: Minor, Investigate when have time, especially performance side
+    useEffect(() => {
+        form.reset({
             title: task?.title ?? "",
             description: task?.description ?? "",
             importance: task?.importance ?? TaskImportanceEnum.Ordinary,
             date: task?.date ? new Date(task.date).toISOString() : undefined,
             time: task?.time ? new Date(task.time).toISOString() : undefined,
-            repeatKind: task?.repeatKind ?? undefined,
+            repeatKind: task?.repeatKind ?? TaskRepeatKindEnum.None,
             repeatTimes: task?.repeatTimes ?? 1,
-        },
-    });
+        });
+    }, [form, task]);
 
     const onSubmit = (data: FormInputs) => {
         const date = data.date ? new Date(data.date) : undefined;
@@ -275,15 +275,13 @@ const TaskEditScreen: React.FC = () => {
         history.push("/tabs/tasks");
     };
 
-    const minRepeatTimes = task?.index ? task.index + 1 : 1;
-
     return (
         <EditScreen
             id="edit-task"
             title="Task Edit"
-            form={<Form form={formMethods} minRepeatTimes={minRepeatTimes} />}
-            fabSaveOnClick={formMethods.handleSubmit(onSubmit)}
-            fabRemoveOnClick={onRemove}
+            form={<Form form={form} minRepeatTimes={task?.index ? task.index + 1 : 1} />}
+            fabSaveOnClick={form.handleSubmit(onSubmit)}
+            fabRemoveOnClick={task && onRemove}
         />
     );
 };

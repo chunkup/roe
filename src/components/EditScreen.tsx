@@ -20,6 +20,10 @@ interface EditScreenProps {
     fabRemoveOnClick?: () => void;
 }
 
+const style = {
+    display: "flex",
+};
+
 const EditScreen: React.FC<EditScreenProps> = ({ id, title, form, fabSaveOnClick, fabRemoveOnClick }) => {
     return (
         <IonPage id={id}>
@@ -36,13 +40,13 @@ const EditScreen: React.FC<EditScreenProps> = ({ id, title, form, fabSaveOnClick
             <IonContent fullscreen={true}>
                 {form}
 
-                <IonFab vertical="bottom" horizontal="center" slot="fixed" style={{ display: "flex" }}>
-                    <IonFabButton style={{ marginLeft: 5, marginRight: 5 }}>
+                <IonFab vertical="bottom" horizontal="center" slot="fixed" style={style}>
+                    <IonFabButton className="ion-margin-end">
                         <IonIcon icon={saveOutline} onClick={fabSaveOnClick} />
                     </IonFabButton>
 
                     {fabRemoveOnClick && (
-                        <IonFabButton style={{ marginLeft: 5, marginRight: 5 }}>
+                        <IonFabButton className="ion-margin-start">
                             <IonIcon icon={trashBinOutline} onClick={fabRemoveOnClick} />
                         </IonFabButton>
                     )}

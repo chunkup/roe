@@ -1,6 +1,7 @@
 import { IonInput, IonItem, IonLabel, IonList, IonListHeader, IonNote, IonTextarea } from "@ionic/react";
+import { useEffect } from "react";
+import { useForm, UseFormReturn } from "react-hook-form";
 import { useHistory, useParams } from "react-router";
-import { FormProvider, useForm, UseFormReturn } from "react-hook-form";
 
 import EditScreen from "../../components/EditScreen";
 import { useStore } from "../../store";
@@ -11,19 +12,18 @@ type FormInputs = {
     price: number;
 };
 
-const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formMethods }) => {
-    const ionInvalidClass = (name: keyof FormInputs) =>
-        formMethods.formState.isSubmitted && formMethods.getFieldState(name).error ? "ion-invalid" : "";
+const Form: React.FC<{ form: UseFormReturn<FormInputs> }> = ({ form }) => {
+    const ionInvalidClass = (name: keyof FormInputs) => (form.formState.isSubmitted && form.getFieldState(name).error ? "ion-invalid" : "");
 
     return (
-        <FormProvider {...formMethods}>
+        <form>
             <IonList>
                 <IonListHeader>
                     <IonLabel>Title</IonLabel>
                 </IonListHeader>
 
                 <IonItem className={ionInvalidClass("title")}>
-                    <IonInput {...formMethods.register("title", { required: true })} autofocus={true} />
+                    <IonInput {...form.register("title", { required: true })} autofocus={true} />
                     <IonNote slot="error" color="danger">
                         Required
                     </IonNote>
@@ -34,7 +34,7 @@ const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formM
                 </IonListHeader>
 
                 <IonItem>
-                    <IonTextarea {...formMethods.register("description")} />
+                    <IonTextarea {...form.register("description")} />
                 </IonItem>
             </IonList>
 
@@ -44,31 +44,32 @@ const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formM
                 </IonListHeader>
 
                 <IonItem className={ionInvalidClass("price")}>
-                    <IonInput {...formMethods.register("price", { required: true })} />
+                    <IonInput {...form.register("price", { required: true })} />
                     <IonNote slot="error" color="danger">
                         Required
                     </IonNote>
                 </IonItem>
             </IonList>
-        </FormProvider>
+        </form>
     );
 };
 
 const RewardEditScreen: React.FC = () => {
     const params = useParams<{ rewardId: string }>();
     const history = useHistory();
+    const form = useForm<FormInputs>();
     const reward = useStore((state) => state.rewardSlice.rewards.find((reward) => reward.id === params.rewardId));
     const addReward = useStore((state) => state.rewardSlice.add);
     const updateReward = useStore((state) => state.rewardSlice.update);
     const removeReward = useStore((state) => state.rewardSlice.remove);
 
-    const formMethods = useForm<FormInputs>({
-        defaultValues: {
+    useEffect(() => {
+        form.reset({
             title: reward?.title ?? "",
             description: reward?.description ?? "",
             price: reward?.price ?? 0,
-        },
-    });
+        });
+    }, [reward, form]);
 
     const onSubmit = (data: FormInputs) => {
         if (reward) {
@@ -92,8 +93,8 @@ const RewardEditScreen: React.FC = () => {
         <EditScreen
             id="edit-reward"
             title="Reward Edit"
-            form={<Form formMethods={formMethods} />}
-            fabSaveOnClick={formMethods.handleSubmit(onSubmit)}
+            form={<Form form={form} />}
+            fabSaveOnClick={form.handleSubmit(onSubmit)}
             fabRemoveOnClick={reward && onRemove}
         />
     );
