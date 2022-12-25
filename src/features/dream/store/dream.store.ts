@@ -2,15 +2,17 @@ import { Draft } from "immer";
 import { nanoid } from "nanoid";
 import { StateCreator } from "zustand";
 import { Mutators, Store } from "../../../store";
+import { importanceToPrice } from "../../task/store/task-price.enum";
 
 export interface Dream {
     id: string;
     title: string;
     description?: string | null;
     completed: boolean;
+    completionPercent: number;
 }
 
-export type DreamEditable = Omit<Dream, "id" | "completed">;
+export type DreamEditable = Omit<Dream, "id" | "completed" | "completionPercent">;
 
 export interface DreamStoreSlice {
     dreamSlice: {
@@ -32,6 +34,18 @@ export function tryCompleteDream(state: Draft<Store>, dreamId: string): void {
     const tasks = state.taskSlice.tasks.filter((task) => task.dreamId === dreamId);
     const completed = tasks.every((task) => task.completed);
 
+    let completedTasksWeight = 0;
+    let tasksWeight = 0;
+    tasks.forEach((task) => {
+        tasksWeight += importanceToPrice(task.importance);
+
+        if (task.completed) {
+            completedTasksWeight += importanceToPrice(task.importance);
+        }
+    });
+
+    dream.completionPercent = Math.floor((completedTasksWeight / tasksWeight) * 100);
+
     if (dream.completed === completed) {
         return;
     }
@@ -51,7 +65,8 @@ export const createDreamStoreSlice: StateCreator<Store, Mutators, [], DreamStore
                     id: nanoid(),
                     title: dreamEditable.title,
                     description: dreamEditable.description,
-                    completed: false,
+                    completed: true,
+                    completionPercent: 0,
                 });
             }),
 
@@ -84,31 +99,3 @@ export function sortDreams(dreams: Dream[]): Dream[] {
         return (aCompleted ? 1 : 0) - (bCompleted ? 1 : 0);
     });
 }
-
-// TODO: Finish
-// export function useDreamCompletionPercent(dream: Dream) {
-//   const dream = get().dreamSlice.dreams.find(d => d.id === dreamId);
-
-//       if (!dream) {
-//         throw new Error(`Dream with id ${dreamId} not found`);
-//       }
-
-//       const tasks = get().taskSlice.tasks.filter(task => task.dreamId === dream.id);
-
-//       let price = 0;
-//       let completedPrice = 0;
-
-//       tasks.forEach(task => {
-//         const iterations = get().taskIterationSlice.taskIterations.filter(iteration => iteration.taskId === task.id);
-
-//         iterations.forEach(iteration => {
-//           price += taskImportanceEnumToPrice(iteration.importance);
-
-//           if (iteration.completed) {
-//             completedPrice += taskImportanceEnumToPrice(iteration.importance);
-//           }
-//         })
-//       });
-
-//       return completedPrice / price * 100;
-// }
