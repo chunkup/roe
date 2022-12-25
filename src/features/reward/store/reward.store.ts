@@ -1,7 +1,7 @@
+import { nanoid } from "nanoid";
 import { StateCreator } from "zustand";
 import { Mutators, Store } from "../../../store";
-import { nanoid } from "nanoid";
-import { adjustUserBalance } from "../../user/store/user.store";
+import { changeUserBalance } from "../../user/store/user.store";
 
 export interface Reward {
     id: string;
@@ -12,7 +12,7 @@ export interface Reward {
     bought: boolean;
 }
 
-export type RewardEditable = Pick<Reward, "title" | "price"> & Partial<Pick<Reward, "dreamId" | "description">>;
+export type RewardEditable = Omit<Reward, "id" | "bought">;
 
 export interface RewardStoreSlice {
     rewardSlice: {
@@ -20,7 +20,7 @@ export interface RewardStoreSlice {
         add: (RewardEditable: RewardEditable) => void;
         remove: (rewardId: string) => void;
         update: (rewardId: string, RewardEditable: RewardEditable) => void;
-        toggle: (rewardId: string, state?: boolean) => void;
+        toggle: (rewardId: string) => void;
     };
 }
 
@@ -58,7 +58,7 @@ export const createRewardStoreSlice: StateCreator<Store, Mutators, [], RewardSto
                 reward.price = rewardEditable.price;
             }),
 
-        toggle: (rewardId, bought) => {
+        toggle: (rewardId) => {
             set((state) => {
                 const reward = state.rewardSlice.rewards.find((reward) => reward.id === rewardId);
 
@@ -70,9 +70,9 @@ export const createRewardStoreSlice: StateCreator<Store, Mutators, [], RewardSto
                     return;
                 }
 
-                adjustUserBalance(state, (reward.bought ? 1 : -1) * Number(reward.price));
+                changeUserBalance(state, (reward.bought ? 1 : -1) * Number(reward.price));
 
-                reward.bought = bought ?? !reward.bought;
+                reward.bought = !reward.bought;
             });
         },
     },

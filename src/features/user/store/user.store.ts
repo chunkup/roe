@@ -4,11 +4,11 @@ import { Mutators, Store } from "../../../store";
 export interface UserStoreSlice {
     userSlice: {
         balance: number;
-        adjustBalance: (amount: number) => void;
+        changeBalance: (amount: number) => void;
     };
 }
 
-export function adjustUserBalance(state: Store, amount: number) {
+export function changeUserBalance(state: Store, amount: number) {
     state.userSlice.balance = Number(state.userSlice.balance) + Number(amount);
 }
 
@@ -16,6 +16,6 @@ export const createUserStoreSlice: StateCreator<Store, Mutators, [], UserStoreSl
     userSlice: {
         balance: 0,
 
-        adjustBalance: (amount) => set((state) => adjustUserBalance(state, amount)),
+        changeBalance: (amount) => set((state) => changeUserBalance(state, amount)),
     },
 });

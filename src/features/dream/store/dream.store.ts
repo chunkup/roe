@@ -1,16 +1,16 @@
+import { Draft } from "immer";
+import { nanoid } from "nanoid";
 import { StateCreator } from "zustand";
 import { Mutators, Store } from "../../../store";
-import { nanoid } from "nanoid";
-import { Draft } from "immer";
 
 export interface Dream {
     id: string;
     title: string;
-    description: string | null;
+    description?: string | null;
     completed: boolean;
 }
 
-export type DreamEditable = Pick<Dream, "title" | "description">;
+export type DreamEditable = Omit<Dream, "id" | "completed">;
 
 export interface DreamStoreSlice {
     dreamSlice: {
@@ -18,7 +18,7 @@ export interface DreamStoreSlice {
         add: (dreamEditable: DreamEditable) => void;
         remove: (dreamId: string) => void;
         update: (dreamId: string, dreamEditable: DreamEditable) => void;
-        tryCompleteDream: (dreamId: string) => void;
+        tryComplete: (dreamId: string) => void;
     };
 }
 
@@ -30,7 +30,6 @@ export function tryCompleteDream(state: Draft<Store>, dreamId: string): void {
     }
 
     const tasks = state.taskSlice.tasks.filter((task) => task.dreamId === dreamId);
-    const rewards = state.rewardSlice.rewards.filter((reward) => reward.dreamId === dreamId);
     const completed = tasks.every((task) => task.completed);
 
     if (dream.completed === completed) {
@@ -38,7 +37,8 @@ export function tryCompleteDream(state: Draft<Store>, dreamId: string): void {
     }
 
     dream.completed = completed;
-    rewards.forEach((reward) => state.rewardSlice.toggle(reward.id, completed));
+
+    state.rewardSlice.rewards.filter((reward) => reward.dreamId === dreamId).forEach((reward) => (reward.bought = completed));
 }
 
 export const createDreamStoreSlice: StateCreator<Store, Mutators, [], DreamStoreSlice> = (set) => ({
@@ -72,7 +72,7 @@ export const createDreamStoreSlice: StateCreator<Store, Mutators, [], DreamStore
                 dream.description = dreamEditable.description;
             }),
 
-        tryCompleteDream: (dreamId) => set((state) => tryCompleteDream(state, dreamId)),
+        tryComplete: (dreamId) => set((state) => tryCompleteDream(state, dreamId)),
     },
 });
 

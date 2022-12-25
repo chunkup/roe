@@ -1,14 +1,14 @@
-import { StateCreator } from "zustand";
-import { nanoid } from "nanoid";
 import dayjs from "dayjs";
+import { nanoid } from "nanoid";
+import { StateCreator } from "zustand";
 
-import { TaskRepeatKindEnum } from "./task-repeat-kind.enum";
 import { Mutators, Store } from "../../../store";
-import { importanceToArray, TaskImportanceEnum } from "./task-importance.enum";
-import { adjustUserBalance } from "../../user/store/user.store";
-import { importanceToPrice, priceToNumber } from "./task-price.enum";
 import { tryCompleteDream } from "../../dream/store/dream.store";
+import { changeUserBalance } from "../../user/store/user.store";
+import { importanceToArray, TaskImportanceEnum } from "./task-importance.enum";
 import { TaskPeriodEnum } from "./task-period.enum";
+import { importanceToPrice, priceToNumber } from "./task-price.enum";
+import { TaskRepeatKindEnum } from "./task-repeat-kind.enum";
 
 export interface Task {
     id: string;
@@ -39,7 +39,20 @@ export interface TaskStoreSlice {
     };
 }
 
-function add(state: Store, taskEditable: TaskEditable): void {
+function addIteration(state: Store, task: Task, index: number): void {
+    // TODO: Process next date setting
+    addTask(state, {
+        ...task,
+        index,
+    });
+
+    task.dreamId = undefined;
+    task.repeatKind = TaskRepeatKindEnum.None;
+    task.repeatTimes = 1;
+    task.index = 0;
+}
+
+function addTask(state: Store, taskEditable: TaskEditable): void {
     const taskId = nanoid();
 
     state.taskSlice.tasks.push({
@@ -71,7 +84,7 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
 
         add: (taskEditable) => {
             set((state) => {
-                add(state, taskEditable);
+                addTask(state, taskEditable);
             });
         },
 
@@ -97,15 +110,7 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
                 task.time = taskEditable.time ?? task.time;
 
                 if (task.completed && taskEditable.repeatTimes && taskEditable.repeatTimes > task.repeatTimes) {
-                    add(state, {
-                        ...task,
-                        index: task.repeatTimes,
-                    });
-
-                    task.dreamId = undefined;
-                    task.repeatKind = TaskRepeatKindEnum.None;
-                    task.repeatTimes = 1;
-                    task.index = 0;
+                    addIteration(state, task, taskEditable.repeatTimes);
                 }
             }),
 
@@ -120,22 +125,14 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
                 task.completed = !task.completed;
                 task.completedDate = task.completed ? +new Date() : undefined;
 
-                adjustUserBalance(state, priceToNumber(importanceToPrice(task.importance)) * (task.completed ? 1 : -1));
+                changeUserBalance(state, priceToNumber(importanceToPrice(task.importance)) * (task.completed ? 1 : -1));
 
                 if (task.dreamId) {
                     tryCompleteDream(state, task.dreamId);
                 }
 
                 if (task.completed && task.repeatTimes > task.index + 1) {
-                    add(state, {
-                        ...task,
-                        index: task.index + 1,
-                    });
-
-                    task.dreamId = undefined;
-                    task.repeatKind = TaskRepeatKindEnum.None;
-                    task.repeatTimes = 1;
-                    task.index = 0;
+                    addIteration(state, task, task.index + 1);
                 }
             }),
     },
@@ -189,7 +186,6 @@ export function getTasksLoad(tasks: Task[]): number {
     return tasks.map((task) => priceToNumber(importanceToPrice(task.importance))).reduce((load, price) => load + price, 0);
 }
 
-// TODO: Finish
 function getNextTaskDate(date: Date, taskRepeatKind: TaskRepeatKindEnum): Date {
     const nextDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
