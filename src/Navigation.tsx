@@ -16,10 +16,10 @@ import {
     IonToolbar,
 } from "@ionic/react";
 import { checkmark, starOutline, trophyOutline } from "ionicons/icons";
+import { useRef } from "react";
 import { useLocation } from "react-router";
 import { Redirect, Route } from "react-router-dom";
-
-import { useRef } from "react";
+import { DreamEditScreen } from "./features/dream/dream-edit.screen";
 import { DreamsScreen } from "./features/dream/dreams.screen";
 import { RewardEditScreen } from "./features/reward/reward-edit.screen";
 import { RewardsScreen } from "./features/reward/rewards.screen";
@@ -131,6 +131,14 @@ export const Navigation: React.FC = () => {
 
             <Route path="/tasks/:taskId">
                 <TaskEditScreen />
+            </Route>
+
+            <Route path="/dreams/add">
+                <DreamEditScreen />
+            </Route>
+
+            <Route path="/dreams/:dreamId">
+                <DreamEditScreen />
             </Route>
 
             <Route path="/rewards/add">
