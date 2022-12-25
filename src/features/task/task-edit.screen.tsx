@@ -1,9 +1,13 @@
 import {
+    IonButton,
+    IonDatetime,
+    IonDatetimeButton,
     IonInput,
     IonItem,
     IonLabel,
     IonList,
     IonListHeader,
+    IonModal,
     IonNote,
     IonRadio,
     IonRadioGroup,
@@ -13,7 +17,6 @@ import {
 } from "@ionic/react";
 import { useHistory, useParams } from "react-router";
 import { Controller, FormProvider, useForm, UseFormReturn } from "react-hook-form";
-import dayjs from "dayjs";
 
 import { TaskImportanceEnum } from "./store/task-importance.enum";
 import EditScreen from "../../components/EditScreen";
@@ -37,6 +40,7 @@ type FormInputs = {
 const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: number }> = ({ form, minRepeatTimes }) => {
     const ionInvalidClass = (name: keyof FormInputs) => (form.formState.isSubmitted && form.getFieldState(name).error ? "ion-invalid" : "");
     const dateValue = form.watch("date");
+    const repeatKindValue = form.watch("repeatKind");
 
     return (
         <FormProvider {...form}>
@@ -46,7 +50,7 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
                 </IonListHeader>
 
                 <IonItem className={ionInvalidClass("title")}>
-                    <IonInput {...form.register("title", { required: true })} />
+                    <IonInput {...form.register("title", { required: true })} autofocus={true} />
                     <IonNote slot="error" color="danger">
                         Required
                     </IonNote>
@@ -98,7 +102,31 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
                         control={form.control}
                         name="date"
                         render={({ field: { onChange, value, name } }) => (
-                            <IonInput name={name} value={value} onIonChange={onChange} type="date" clearInput={true} />
+                            <>
+                                <IonDatetimeButton datetime="date">
+                                    {!value && <IonLabel slot="date-target">---- -- --</IonLabel>}
+                                </IonDatetimeButton>
+
+                                <IonModal keepContentsMounted={true}>
+                                    <IonDatetime
+                                        id="date"
+                                        name={name}
+                                        value={value}
+                                        presentation="date"
+                                        min="2000-01-01T00:00:00.000Z"
+                                        onIonChange={(e) => onChange(e.detail.value)}
+                                    ></IonDatetime>
+                                </IonModal>
+
+                                {value && (
+                                    <IonButton
+                                        fill="clear"
+                                        onClick={() => onChange(null)}
+                                    >
+                                        Clear
+                                    </IonButton>
+                                )}
+                            </>
                         )}
                     />
                 </IonItem>
@@ -106,7 +134,34 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
                 {dateValue && (
                     <IonItem>
                         <IonLabel>Time</IonLabel>
-                        <IonInput {...form.register("time")} type="time" clearInput={true} />
+                        <Controller
+                            control={form.control}
+                            name="time"
+                            render={({ field: { onChange, value, name } }) => (
+                                <>
+                                    <IonDatetimeButton datetime="time">
+                                        {!value && <IonLabel slot="time-target">--:--</IonLabel>}
+                                    </IonDatetimeButton>
+
+                                    <IonModal keepContentsMounted={true}>
+                                        <IonDatetime
+                                            id="time"
+                                            name={name}
+                                            value={value}
+                                            presentation="time"
+                                            min="2000-01-01T00:00:00.000Z"
+                                            onIonChange={(e) => onChange(e.detail.value)}
+                                        ></IonDatetime>
+                                    </IonModal>
+
+                                    {value && (
+                                        <IonButton fill="clear" onClick={() => onChange(null)}>
+                                            Clear
+                                        </IonButton>
+                                    )}
+                                </>
+                            )}
+                        />
                     </IonItem>
                 )}
 
@@ -120,7 +175,8 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
                         control={form.control}
                         name="repeatKind"
                         render={({ field: { onChange, value, name } }) => (
-                            <IonSelect name={name} value={value} onIonChange={onChange} placeholder="Repeat kind" disabled={!dateValue}>
+                            <IonSelect name={name} value={value} onIonChange={onChange} placeholder="Repeat kind" interface="action-sheet">
+                                <IonSelectOption value={TaskRepeatKindEnum.None}>None</IonSelectOption>
                                 <IonSelectOption value={TaskRepeatKindEnum.Daily}>Daily</IonSelectOption>
                                 <IonSelectOption value={TaskRepeatKindEnum.Weekdays}>Weekdays</IonSelectOption>
                                 <IonSelectOption value={TaskRepeatKindEnum.Weekends}>Weekends</IonSelectOption>
@@ -139,7 +195,14 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
                         name="repeatTimes"
                         rules={{ min: minRepeatTimes }}
                         render={({ field: { onChange, value, name } }) => (
-                            <IonInput name={name} value={value} onIonChange={onChange} type="number" min={minRepeatTimes} />
+                            <IonInput
+                                name={name}
+                                value={value}
+                                onIonChange={onChange}
+                                type="number"
+                                min={minRepeatTimes}
+                                disabled={repeatKindValue && repeatKindValue === TaskRepeatKindEnum.None}
+                            />
                         )}
                     />
                     <IonNote slot="error" color="danger">
@@ -155,7 +218,6 @@ const TaskEditScreen: React.FC = () => {
     const params = useParams<{ taskId: string }>();
     const history = useHistory();
     const task = useStore((state) => state.taskSlice.tasks.find((task) => task.id === params?.taskId));
-    const taskDate = task?.date ? new Date(task.date) : undefined;
     const addTask = useStore((state) => state.taskSlice.add);
     const updateTask = useStore((state) => state.taskSlice.update);
     const removeTask = useStore((state) => state.taskSlice.remove);
@@ -165,35 +227,40 @@ const TaskEditScreen: React.FC = () => {
             title: task?.title ?? "",
             description: task?.description ?? "",
             importance: task?.importance ?? TaskImportanceEnum.Ordinary,
-            date: taskDate ? dayjs(taskDate).format("DD-MM-YYYY") : undefined,
-            time: taskDate ? dayjs(taskDate).format("HH:mm") : undefined,
+            date: task?.date ? new Date(task.date).toISOString() : undefined,
+            time: task?.time ? new Date(task.time).toISOString() : undefined,
             repeatKind: task?.repeatKind ?? undefined,
             repeatTimes: task?.repeatTimes ?? 1,
         },
     });
 
     const onSubmit = (data: FormInputs) => {
-        const date = data.date ? new Date(data.date + " " + (data.time ?? "")) : undefined;
+        const date = data.date ? new Date(data.date) : undefined;
+        const time = data.time ? new Date(data.time) : undefined;
 
         if (task) {
             updateTask(task.id, {
+                index: task.index,
                 title: data.title,
                 description: data.description,
                 repeatKind: data.repeatKind,
                 repeatTimes: +data.repeatTimes,
                 importance: data.importance,
                 date: date ? +date : undefined,
+                time: date && time ? +time : undefined,
             });
         } else {
             // TODO: Process dream binding
 
             addTask({
+                index: 0,
                 title: data.title,
                 description: data.description,
                 repeatKind: data.repeatKind,
                 repeatTimes: +data.repeatTimes,
                 importance: data.importance,
                 date: date ? +date : undefined,
+                time: date && time ? +time : undefined,
             });
         }
 

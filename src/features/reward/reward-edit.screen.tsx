@@ -23,7 +23,7 @@ const Form: React.FC<{ formMethods: UseFormReturn<FormInputs, any> }> = ({ formM
                 </IonListHeader>
 
                 <IonItem className={ionInvalidClass("title")}>
-                    <IonInput {...formMethods.register("title", { required: true })} />
+                    <IonInput {...formMethods.register("title", { required: true })} autofocus={true} />
                     <IonNote slot="error" color="danger">
                         Required
                     </IonNote>

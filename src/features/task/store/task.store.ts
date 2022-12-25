@@ -20,23 +20,23 @@ export interface Task {
     completed: boolean;
     importance: TaskImportanceEnum;
     date?: number;
+    time?: number;
     completedDate?: number;
 }
 
-export type TaskAdd = Pick<Task, "title" | "importance"> & Partial<Pick<Task, "dreamId" | "description" | "repeatKind" | "repeatTimes" | "index" | "date">>;
-export type TaskUpdate = Partial<Pick<Task, "title" | "description" | "repeatKind" | "repeatTimes" | "importance" | "date">>;
+export type TaskEditable = Omit<Task, "id" | "completed">
 
 export interface TaskStoreSlice {
     taskSlice: {
         tasks: Task[];
-        add: (taskEditable: TaskAdd) => void;
+        add: (taskEditable: TaskEditable) => void;
         remove: (taskId: string) => void;
-        update: (taskId: string, taskEditable: TaskUpdate) => void;
+        update: (taskId: string, taskEditable: TaskEditable) => void;
         toggle: (taskId: string) => void;
     };
 }
 
-function add(state: Store, taskEditable: TaskAdd): void {
+function add(state: Store, taskEditable: TaskEditable): void {
     const taskId = nanoid();
 
     state.taskSlice.tasks.push({
@@ -49,6 +49,7 @@ function add(state: Store, taskEditable: TaskAdd): void {
         repeatKind: taskEditable.repeatKind ?? TaskRepeatKindEnum.None,
         repeatTimes: taskEditable.repeatTimes ?? 1,
         date: taskEditable.date,
+        time: taskEditable.time,
         completed: false,
     });
 }
@@ -82,6 +83,7 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
                 task.repeatTimes = taskEditable.repeatTimes ?? task.repeatTimes;
                 task.importance = taskEditable.importance ?? task.importance;
                 task.date = taskEditable.date ?? task.date;
+                task.time = taskEditable.time ?? task.time;
 
                 if (task.completed && taskEditable.repeatTimes && taskEditable.repeatTimes > task.repeatTimes) {
                     add(state, {
