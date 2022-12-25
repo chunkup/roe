@@ -1,5 +1,6 @@
 import { StateCreator } from "zustand";
 import { nanoid } from "nanoid";
+import dayjs from "dayjs";
 
 import { TaskRepeatKindEnum } from "./task-repeat-kind.enum";
 import { Mutators, Store } from "../../../store";
@@ -24,11 +25,13 @@ export interface Task {
     completedDate?: number;
 }
 
-export type TaskEditable = Omit<Task, "id" | "completed">
+export type TaskEditable = Omit<Task, "id" | "completed">;
 
 export interface TaskStoreSlice {
     taskSlice: {
         tasks: Task[];
+        taskPeriod: TaskPeriodEnum;
+        setTaskPeriod: (taskPeriod: TaskPeriodEnum) => void;
         add: (taskEditable: TaskEditable) => void;
         remove: (taskId: string) => void;
         update: (taskId: string, taskEditable: TaskEditable) => void;
@@ -58,9 +61,17 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
     taskSlice: {
         tasks: [],
 
+        taskPeriod: TaskPeriodEnum.Today,
+
+        setTaskPeriod: (taskPeriod: TaskPeriodEnum) => {
+            set((state) => {
+                state.taskSlice.taskPeriod = taskPeriod;
+            });
+        },
+
         add: (taskEditable) => {
             set((state) => {
-                add(state, taskEditable)
+                add(state, taskEditable);
             });
         },
 
@@ -118,7 +129,7 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
                 if (task.completed && task.repeatTimes > task.index + 1) {
                     add(state, {
                         ...task,
-                        index: task.index + 1
+                        index: task.index + 1,
                     });
 
                     task.dreamId = undefined;
@@ -130,43 +141,25 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
     },
 });
 
+/**
+ * Filter tasks by period
+ * @param tasks tasks array
+ * @param period period enum value
+ * @returns filtered tasks array
+ */
 export function filterTasks(tasks: Task[], period: TaskPeriodEnum): Task[] {
     const now = new Date();
     let periodFilterFn: (task: Task) => boolean;
 
     switch (period) {
         case TaskPeriodEnum.Today:
-            periodFilterFn = (task: Task) => {
-                const taskDate = task.date ? new Date(task.date) : undefined;
-
-                return (
-                    now.getFullYear() === taskDate?.getFullYear() &&
-                    now.getMonth() === taskDate?.getMonth() &&
-                    now.getDate() === taskDate?.getDate()
-                );
-            };
+            periodFilterFn = (task: Task) => !!(task.date && dayjs(now).diff(task.date, "day") === 0);
             break;
         case TaskPeriodEnum.Tomorrow:
-            periodFilterFn = (task: Task) => {
-                const taskDate = task.date ? new Date(task.date) : undefined;
-
-                return (
-                    now.getFullYear() === taskDate?.getFullYear() &&
-                    now.getMonth() === taskDate?.getMonth() &&
-                    now.getDate() + 1 === taskDate?.getDate()
-                );
-            };
+            periodFilterFn = (task: Task) => !!(task.date && dayjs(now).diff(task.date, "day") === -1);
             break;
         case TaskPeriodEnum.Upcoming:
-            periodFilterFn = (task: Task) => {
-                const taskDate = task.date ? new Date(task.date) : undefined;
-
-                return (
-                    now.getFullYear() === taskDate?.getFullYear() &&
-                    now.getMonth() === taskDate?.getMonth() &&
-                    now.getDate() + 1 < taskDate?.getDate()
-                );
-            };
+            periodFilterFn = (task: Task) => !!(task.date && dayjs(now).diff(task.date, "day") < -1);
             break;
         case TaskPeriodEnum.Someday:
             periodFilterFn = (task: Task) => !task.date;
@@ -179,6 +172,11 @@ export function filterTasks(tasks: Task[], period: TaskPeriodEnum): Task[] {
     return tasks.filter(periodFilterFn);
 }
 
+/**
+ * Sort tasks by importance and completed state
+ * @param tasks tasks array
+ * @returns sorted tasks array
+ */
 export function sortTasks(tasks: Task[]) {
     const taskImportanceArray = importanceToArray();
 
@@ -188,11 +186,10 @@ export function sortTasks(tasks: Task[]) {
 }
 
 export function getTasksLoad(tasks: Task[]): number {
-    return tasks
-        .map((task) => priceToNumber(importanceToPrice(task.importance)))
-        .reduce((load, price) => load + price, 0);
+    return tasks.map((task) => priceToNumber(importanceToPrice(task.importance))).reduce((load, price) => load + price, 0);
 }
 
+// TODO: Finish
 function getNextTaskDate(date: Date, taskRepeatKind: TaskRepeatKindEnum): Date {
     const nextDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
@@ -221,4 +218,3 @@ function getNextTaskDate(date: Date, taskRepeatKind: TaskRepeatKindEnum): Date {
             return new Date(date.getFullYear() + 1, date.getMonth(), date.getDate());
     }
 }
-

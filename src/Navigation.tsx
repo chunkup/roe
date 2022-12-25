@@ -3,6 +3,8 @@ import {
     IonHeader,
     IonIcon,
     IonItem,
+    IonItemDivider,
+    IonItemGroup,
     IonLabel,
     IonList,
     IonMenu,
@@ -14,6 +16,7 @@ import {
     IonToolbar,
 } from "@ionic/react";
 import { Redirect, Route } from "react-router-dom";
+import { useLocation } from "react-router";
 import { checkmark, starOutline, trophyOutline } from "ionicons/icons";
 
 import TasksScreen from "./features/task/tasks.screen";
@@ -21,27 +24,51 @@ import DreamsScreen from "./features/dream/dreams.screen";
 import RewardsScreen from "./features/reward/rewards.screen";
 import TaskEditScreen from "./features/task/task-edit.screen";
 import RewardEditScreen from "./features/reward/reward-edit.screen";
+import { TaskPeriodEnum } from "./features/task/store/task-period.enum";
+import { useStore } from "./store";
+import { useRef } from "react";
+
+const Drawer: React.FC = () => {
+    const menu = useRef<HTMLIonMenuElement>(null);
+    const location = useLocation();
+    const setTaskPeriod = useStore((state) => state.taskSlice.setTaskPeriod);
+
+    const onPeriodItemClick = (period: TaskPeriodEnum) => {
+        setTaskPeriod(period);
+        menu.current?.close();
+    }
+
+    return (
+        <IonMenu ref={menu} side="start" menuId="drawer" contentId="tabs">
+            <IonHeader>
+                <IonToolbar>
+                    <IonTitle>Drawer</IonTitle>
+                </IonToolbar>
+            </IonHeader>
+
+            <IonContent>
+                {location.pathname === "/tabs/tasks" && (
+                    <IonList>
+                        <IonItemGroup>
+                            <IonItemDivider>
+                                <IonLabel>Tasks period</IonLabel>
+                            </IonItemDivider>
+
+                            {Object.values(TaskPeriodEnum).map((period) => (
+                                <IonItem button key={period} onClick={() => onPeriodItemClick(period)}>{period}</IonItem>
+                            ))}
+                        </IonItemGroup>
+                    </IonList>
+                )}
+            </IonContent>
+        </IonMenu>
+    )
+}
 
 const Tabs = () => {
     return (
         <>
-            <IonMenu side="start" menuId="drawer" contentId="tabs">
-                <IonHeader>
-                    <IonToolbar>
-                        <IonTitle>Drawer</IonTitle>
-                    </IonToolbar>
-                </IonHeader>
-
-                <IonContent>
-                    <IonList>
-                        <IonItem>Menu Item</IonItem>
-                        <IonItem>Menu Item</IonItem>
-                        <IonItem>Menu Item</IonItem>
-                        <IonItem>Menu Item</IonItem>
-                        <IonItem>Menu Item</IonItem>
-                    </IonList>
-                </IonContent>
-            </IonMenu>
+            <Drawer />
 
             <IonContent scrollX={false} scrollY={false} id="tabs">
                 <IonTabs>
@@ -68,11 +95,12 @@ const Tabs = () => {
                             <IonIcon icon={checkmark} />
                             <IonLabel>Tasks</IonLabel>
                         </IonTabButton>
-                        s
+
                         <IonTabButton tab="dreams" href="/tabs/dreams">
                             <IonIcon icon={starOutline} />
                             <IonLabel>Dreams</IonLabel>
                         </IonTabButton>
+
                         <IonTabButton tab="rewards" href="/tabs/rewards">
                             <IonIcon icon={trophyOutline} />
                             <IonLabel>Rewards</IonLabel>
