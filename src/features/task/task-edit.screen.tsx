@@ -170,6 +170,7 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
                             />
                         )}
                     />
+                    {minRepeatTimes > 1 && <IonLabel slot="end">Current iteration: {minRepeatTimes}</IonLabel>}
                     <IonNote slot="error" color="danger">
                         Cannot be negative or lower than number of completed iterations
                     </IonNote>
@@ -215,7 +216,6 @@ export const TaskEditScreen: React.FC = () => {
             });
         } else {
             // TODO: Process dream binding
-
             addTask({
                 ...data,
                 index: 0,

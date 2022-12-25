@@ -101,10 +101,11 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
                     throw new Error(`Task with id ${taskId} not found`);
                 }
 
+                task.index = taskEditable.repeatKind === TaskRepeatKindEnum.None ? 0 : task.index;
                 task.title = taskEditable.title ?? task.title;
                 task.description = taskEditable.description ?? task.description;
                 task.repeatKind = taskEditable.repeatKind ?? task.repeatKind;
-                task.repeatTimes = taskEditable.repeatTimes ?? task.repeatTimes;
+                task.repeatTimes = taskEditable.repeatKind === TaskRepeatKindEnum.None ? 1 : taskEditable.repeatTimes ?? task.repeatTimes;
                 task.importance = taskEditable.importance ?? task.importance;
                 task.date = taskEditable.date ?? task.date;
                 task.time = taskEditable.time ?? task.time;
