@@ -9,10 +9,11 @@ export interface Reward {
     title: string;
     description?: string;
     price: number;
-    bought: boolean;
+    completed: boolean;
+    completionDate?: number;
 }
 
-export type RewardEditable = Omit<Reward, "id" | "bought">;
+export type RewardEditable = Omit<Reward, "id" | "completed">;
 
 export interface RewardStoreSlice {
     rewardSlice: {
@@ -36,7 +37,7 @@ export const createRewardStoreSlice: StateCreator<Store, Mutators, [], RewardSto
                     title: rewardEditable.title,
                     description: rewardEditable.description,
                     price: rewardEditable.dreamId ? 0 : rewardEditable.price,
-                    bought: false,
+                    completed: false,
                 });
             }),
 
@@ -66,13 +67,14 @@ export const createRewardStoreSlice: StateCreator<Store, Mutators, [], RewardSto
                     throw new Error(`Reward with id ${rewardId} not found`);
                 }
 
-                if (!reward.bought && state.userSlice.balance < reward.price) {
+                if (!reward.completed && state.userSlice.balance < reward.price) {
                     return;
                 }
 
-                changeUserBalance(state, (reward.bought ? 1 : -1) * Number(reward.price));
+                changeUserBalance(state, (reward.completed ? 1 : -1) * Number(reward.price));
 
-                reward.bought = !reward.bought;
+                reward.completed = !reward.completed;
+                reward.completionDate = reward.completed ? Date.now() : undefined;
             });
         },
     },
@@ -80,8 +82,8 @@ export const createRewardStoreSlice: StateCreator<Store, Mutators, [], RewardSto
 
 export function sortRewards(rewards: Reward[]) {
     return rewards.sort((a, b) => {
-        const aCompleted = a.bought;
-        const bCompleted = b.bought;
+        const aCompleted = a.completed;
+        const bCompleted = b.completed;
 
         return (aCompleted ? 1 : 0) - (bCompleted ? 1 : 0);
     });

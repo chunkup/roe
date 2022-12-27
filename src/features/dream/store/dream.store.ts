@@ -10,6 +10,7 @@ export interface Dream {
     description?: string | null;
     completed: boolean;
     completionPercent: number;
+    completionDate?: number;
 }
 
 export type DreamEditable = Omit<Dream, "id" | "completed" | "completionPercent">;
@@ -51,8 +52,9 @@ export function tryCompleteDream(state: Draft<Store>, dreamId: string): void {
     }
 
     dream.completed = completed;
+    dream.completionDate = completed ? Date.now() : undefined;
 
-    state.rewardSlice.rewards.filter((reward) => reward.dreamId === dreamId).forEach((reward) => (reward.bought = completed));
+    state.rewardSlice.rewards.filter((reward) => reward.dreamId === dreamId).forEach((reward) => (reward.completed = completed));
 }
 
 export const createDreamStoreSlice: StateCreator<Store, Mutators, [], DreamStoreSlice> = (set) => ({

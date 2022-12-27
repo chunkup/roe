@@ -1,14 +1,16 @@
 import { IonCheckbox, IonIcon, IonItem, IonLabel, IonList } from "@ionic/react";
-import { starOutline } from "ionicons/icons";
+import { ribbonOutline, starOutline } from "ionicons/icons";
 import { HomeScreen } from "../../components/HomeScreen";
 import { useStore } from "../../store";
-import { Reward } from "./store/reward.store";
+import { Reward, sortRewards } from "./store/reward.store";
+
+const flexCenter = { display: "flex", alignItems: "center" };
 
 const RewardItem = ({ reward }: { reward: Reward }) => {
     const rewardToggle = useStore((state) => state.rewardSlice.toggle);
     const userBalance = useStore((state) => state.userSlice.balance);
 
-    const rewardBuyable = reward.bought || userBalance >= reward?.price;
+    const rewardBuyable = reward.completed || userBalance >= reward?.price;
 
     return (
         <IonItem routerLink={"/rewards/" + reward.id}>
@@ -17,7 +19,7 @@ const RewardItem = ({ reward }: { reward: Reward }) => {
             ) : (
                 <IonCheckbox
                     slot="start"
-                    checked={reward.bought}
+                    checked={reward.completed}
                     disabled={!rewardBuyable}
                     onClick={(e) => e.stopPropagation()}
                     onIonChange={() => rewardToggle(reward.id)}
@@ -29,17 +31,23 @@ const RewardItem = ({ reward }: { reward: Reward }) => {
                 {reward.description && <p>{reward.description}</p>}
             </IonLabel>
 
-            {!reward.dreamId && <IonLabel slot="end">{reward.price}</IonLabel>}
+            {!reward.dreamId && (
+                <IonLabel slot="end" style={flexCenter}>
+                    {reward.price}
+                    <IonIcon className="ion-margin-start" icon={ribbonOutline} />
+                </IonLabel>
+            )}
         </IonItem>
     );
 };
 
 const RewardsList = () => {
     const rewards = useStore((state) => state.rewardSlice.rewards);
+    const sortedRewards = sortRewards(rewards);
 
     return (
         <IonList>
-            {rewards.map((reward) => (
+            {sortedRewards.map((reward) => (
                 <RewardItem reward={reward} key={reward.id} />
             ))}
         </IonList>
@@ -54,7 +62,12 @@ export const RewardsScreen: React.FC = () => {
             id="rewards-screen"
             title="Rewards"
             list={<RewardsList />}
-            toolbarRight={<IonLabel className="ion-margin-horizontal">{userBalance}</IonLabel>}
+            toolbarRight={
+                <IonLabel className="ion-margin-horizontal" style={flexCenter}>
+                    {userBalance}
+                    <IonIcon className="ion-margin-start" icon={ribbonOutline} />
+                </IonLabel>
+            }
             fabRouterLink="/rewards/add"
         />
     );

@@ -124,7 +124,7 @@ export const createTaskStoreSlice: StateCreator<Store, Mutators, [], TaskStoreSl
                 }
 
                 task.completed = !task.completed;
-                task.completedDate = task.completed ? +new Date() : undefined;
+                task.completedDate = task.completed ? Date.now() : undefined;
 
                 changeUserBalance(state, priceToNumber(importanceToPrice(task.importance)) * (task.completed ? 1 : -1));
 
