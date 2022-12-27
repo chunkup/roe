@@ -1,5 +1,4 @@
 import { IonInput, IonItem, IonLabel, IonList, IonListHeader, IonNote, IonTextarea } from "@ionic/react";
-import { useEffect } from "react";
 import { useForm, UseFormReturn } from "react-hook-form";
 import { useHistory, useParams } from "react-router";
 
@@ -23,7 +22,7 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs>; dream: boolean }> = ({ f
                 </IonListHeader>
 
                 <IonItem className={ionInvalidClass("title")}>
-                    <IonInput {...form.register("title", { required: true })} autofocus={true} />
+                    <IonInput {...form.register("title", { required: true })} />
                     <IonNote slot="error" color="danger">
                         Required
                     </IonNote>
@@ -59,19 +58,18 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs>; dream: boolean }> = ({ f
 export const RewardEditScreen: React.FC = () => {
     const params = useParams<{ rewardId: string; dreamId: string }>();
     const history = useHistory();
-    const form = useForm<FormInputs>();
     const reward = useStore((state) => state.rewardSlice.rewards.find((reward) => reward.id === params.rewardId));
     const addReward = useStore((state) => state.rewardSlice.add);
     const updateReward = useStore((state) => state.rewardSlice.update);
     const removeReward = useStore((state) => state.rewardSlice.remove);
 
-    useEffect(() => {
-        form.reset({
+    const form = useForm<FormInputs>({
+        defaultValues: {
             title: reward?.title ?? "",
             description: reward?.description ?? "",
             price: reward?.price ?? 0,
-        });
-    }, [reward, form]);
+        },
+    });
 
     const onSubmit = (data: FormInputs) => {
         if (reward) {

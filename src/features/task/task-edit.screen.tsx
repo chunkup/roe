@@ -11,7 +11,6 @@ import {
     IonSelectOption,
     IonTextarea,
 } from "@ionic/react";
-import { useEffect } from "react";
 import { Controller, useForm, UseFormReturn } from "react-hook-form";
 import { useHistory, useParams } from "react-router";
 
@@ -183,15 +182,13 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
 export const TaskEditScreen: React.FC = () => {
     const params = useParams<{ taskId: string; dreamId: string }>();
     const history = useHistory();
-    const form = useForm<FormInputs>();
     const task = useStore((state) => state.taskSlice.tasks.find((task) => task.id === params?.taskId));
     const addTask = useStore((state) => state.taskSlice.add);
     const updateTask = useStore((state) => state.taskSlice.update);
     const removeTask = useStore((state) => state.taskSlice.remove);
 
-    // TODO: Minor, Investigate when have time, especially performance side
-    useEffect(() => {
-        form.reset({
+    const form = useForm<FormInputs>({
+        defaultValues: {
             title: task?.title ?? "",
             description: task?.description ?? "",
             importance: task?.importance ?? TaskImportanceEnum.Ordinary,
@@ -199,8 +196,8 @@ export const TaskEditScreen: React.FC = () => {
             time: task?.time ? new Date(task.time).toISOString() : undefined,
             repeatKind: task?.repeatKind ?? TaskRepeatKindEnum.None,
             repeatTimes: task?.repeatTimes ?? 1,
-        });
-    }, [form, task]);
+        },
+    });
 
     const onSubmit = (data: FormInputs) => {
         const date = data.date ? new Date(data.date) : undefined;
@@ -216,7 +213,6 @@ export const TaskEditScreen: React.FC = () => {
                 time: date && time ? +time : undefined,
             });
         } else {
-            // TODO: Process dream binding
             addTask({
                 ...data,
                 index: 0,

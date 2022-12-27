@@ -81,12 +81,18 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs>; dreamId: string }> = ({ 
 export const DreamEditScreen: React.FC = () => {
     const params = useParams<{ dreamId: string }>();
     const history = useHistory();
-    const form = useForm<FormInputs>();
     const dream = useStore((state) => state.dreamSlice.dreams.find((dream) => dream.id === params.dreamId));
     const [dreamId, setDreamId] = useState(dream?.id ?? nanoid());
     const addDream = useStore((state) => state.dreamSlice.add);
     const updateDream = useStore((state) => state.dreamSlice.update);
     const removeDream = useStore((state) => state.dreamSlice.remove);
+
+    const form = useForm<FormInputs>({
+        defaultValues: {
+            title: dream?.title ?? "",
+            description: dream?.description ?? "",
+        },
+    });
 
     useEffect(() => {
         setDreamId(dream?.id ?? nanoid());
@@ -111,17 +117,6 @@ export const DreamEditScreen: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    useEffect(() => {
-        form.reset({
-            title: dream?.title ?? "",
-            description: dream?.description ?? "",
-        });
-    }, [dream, form]);
-
-    const onSubmit = (data: FormInputs) => {
-        history.goBack();
-    };
-
     const onRemove = () => {
         removeDream(dreamId);
         history.goBack();
@@ -132,7 +127,7 @@ export const DreamEditScreen: React.FC = () => {
             id="edit-dream"
             title="Dream Edit"
             form={<Form form={form} dreamId={dreamId} />}
-            fabSaveOnClick={form.handleSubmit(onSubmit)}
+            fabSaveOnClick={() => history.goBack()}
             fabRemoveOnClick={dream && onRemove}
         />
     );
