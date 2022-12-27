@@ -80,7 +80,7 @@ export const RewardEditScreen: React.FC = () => {
             addReward({ dreamId: params.dreamId, title: data.title, description: data.description, price: data.price || 0 });
         }
 
-        history.push(params.dreamId ? "/dreams/" + params.dreamId : "/tabs/rewards");
+        history.goBack();
     };
 
     const onRemove = () => {
@@ -88,7 +88,7 @@ export const RewardEditScreen: React.FC = () => {
             removeReward(reward.id);
         }
 
-        history.push(params.dreamId ? "/dreams/" + params.dreamId : "/tabs/rewards");
+        history.goBack();
     };
 
     return (

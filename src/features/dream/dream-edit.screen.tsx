@@ -83,12 +83,14 @@ export const DreamEditScreen: React.FC = () => {
     const history = useHistory();
     const form = useForm<FormInputs>();
     const dream = useStore((state) => state.dreamSlice.dreams.find((dream) => dream.id === params.dreamId));
-    const dreamId = useState(dream?.id ?? nanoid())[0];
+    const [dreamId, setDreamId] = useState(dream?.id ?? nanoid());
     const addDream = useStore((state) => state.dreamSlice.add);
     const updateDream = useStore((state) => state.dreamSlice.update);
     const removeDream = useStore((state) => state.dreamSlice.remove);
 
     useEffect(() => {
+        setDreamId(dream?.id ?? nanoid());
+
         if (!dream) {
             // Add dream and if it would left empty, remove it on rendering the home screen
             addDream({ id: dreamId, title: "" });
@@ -117,12 +119,12 @@ export const DreamEditScreen: React.FC = () => {
     }, [dream, form]);
 
     const onSubmit = (data: FormInputs) => {
-        history.push("/tabs/dreams");
+        history.goBack();
     };
 
     const onRemove = () => {
         removeDream(dreamId);
-        history.push("/tabs/dreams");
+        history.goBack();
     };
 
     return (

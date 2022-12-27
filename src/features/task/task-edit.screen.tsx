@@ -226,7 +226,7 @@ export const TaskEditScreen: React.FC = () => {
             });
         }
 
-        history.push(params.dreamId ? "/dreams/" + params.dreamId : "/tabs/tasks");
+        history.goBack();
     };
 
     const onRemove = () => {
@@ -234,7 +234,7 @@ export const TaskEditScreen: React.FC = () => {
             removeTask(task.id);
         }
 
-        history.push(params.dreamId ? "/dreams/" + params.dreamId : "/tabs/tasks");
+        history.goBack();
     };
 
     return (
