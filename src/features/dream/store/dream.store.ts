@@ -24,6 +24,7 @@ export interface DreamStoreSlice {
     };
 }
 
+// TODO: Check why it's not working as expected
 export function tryCompleteDream(state: Draft<Store>, dreamId: string): void {
     const dream = state.dreamSlice.dreams.find((dream) => dream.id === dreamId);
 
@@ -37,14 +38,13 @@ export function tryCompleteDream(state: Draft<Store>, dreamId: string): void {
     let completedTasksWeight = 0;
     let tasksWeight = 0;
     tasks.forEach((task) => {
-        tasksWeight += importanceToPrice(task.importance);
+        tasksWeight += importanceToPrice(task.importance) * task.repeatTimes;
 
         if (task.completed) {
-            completedTasksWeight += importanceToPrice(task.importance);
+            completedTasksWeight += importanceToPrice(task.importance) * (task.index + 1);
         }
     });
 
-    // TODO: Include task iterations
     dream.completionPercent = Math.floor((completedTasksWeight / tasksWeight) * 100);
 
     if (dream.completed === completed) {
@@ -86,8 +86,7 @@ export const createDreamStoreSlice: StateCreator<Store, Mutators, [], DreamStore
                 const dream = state.dreamSlice.dreams.find((dream) => dream.id === dreamId);
 
                 if (!dream) {
-                    console.warn(`Dream with id ${dreamId} not found`);
-                    return;
+                    throw new Error(`Dream with id ${dreamId} not found`);
                 }
 
                 dream.title = dreamEditable.title;

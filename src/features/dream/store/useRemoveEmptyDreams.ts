@@ -17,5 +17,7 @@ export function useRemoveEmptyDreams() {
 
     useEffect(() => {
         emptyDreams.forEach((dream) => dreamRemove(dream.id));
-    }, [emptyDreams, dreamRemove]);
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 }

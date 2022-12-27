@@ -22,7 +22,7 @@ import { TaskRepeatKindEnum } from "./store/task-repeat-kind.enum";
 import { DateTimeInput } from "../../components/DateTimeInput";
 import "../../theme/radio.css";
 
-// TODO: Improve processing MIN/MAX dates, etc
+// TODO: Improve processing MIN/MAX dates, repeat times accordingly to the date, creating new iteration accordingly to the date, etc
 
 type FormInputs = {
     title: string;
