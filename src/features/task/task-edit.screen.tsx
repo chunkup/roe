@@ -47,7 +47,7 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
                 </IonListHeader>
 
                 <IonItem className={ionInvalidClass("title")}>
-                    <IonInput {...form.register("title", { required: true })} autofocus={true} />
+                    <IonInput {...form.register("title", { required: true })} />
                     <IonNote slot="error" color="danger">
                         Required
                     </IonNote>

@@ -11,6 +11,7 @@ import {
     IonToolbar,
 } from "@ionic/react";
 import { addCircleOutline } from "ionicons/icons";
+import { useRemoveEmptyDreams } from "../features/dream/store/useRemoveEmptyDreams";
 
 interface HomeScreenProps {
     id: string;
@@ -21,6 +22,8 @@ interface HomeScreenProps {
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ id, title, list, fabRouterLink, toolbarRight }) => {
+    useRemoveEmptyDreams();
+
     return (
         <IonPage id={id}>
             <IonHeader>

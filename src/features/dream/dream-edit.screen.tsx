@@ -15,8 +15,8 @@ type FormInputs = {
 const Form: React.FC<{ form: UseFormReturn<FormInputs>; dreamId: string }> = ({ form, dreamId }) => {
     const history = useHistory();
     const ionInvalidClass = (name: keyof FormInputs) => (form.formState.isSubmitted && form.getFieldState(name).error ? "ion-invalid" : "");
-    const dreamTasks = useStore((state) => state.taskSlice.tasks.filter((task) => task.dreamId === dreamId));
-    const dreamRewards = useStore((state) => state.rewardSlice.rewards.filter((reward) => reward.dreamId === dreamId));
+    const tasks = useStore((state) => state.taskSlice.tasks.filter((task) => task.dreamId === dreamId));
+    const rewards = useStore((state) => state.rewardSlice.rewards.filter((reward) => reward.dreamId === dreamId));
 
     return (
         <form>
@@ -26,7 +26,7 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs>; dreamId: string }> = ({ 
                 </IonListHeader>
 
                 <IonItem className={ionInvalidClass("title")}>
-                    <IonInput {...form.register("title", { required: true })} autofocus={true} />
+                    <IonInput {...form.register("title", { required: true })} />
                     <IonNote slot="error" color="danger">
                         Required
                     </IonNote>
@@ -44,7 +44,7 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs>; dreamId: string }> = ({ 
                     <IonLabel>Tasks</IonLabel>
                 </IonListHeader>
 
-                {dreamTasks.map((task) => (
+                {tasks.map((task) => (
                     <IonItem key={task.id} onClick={() => history.push("/dream/" + dreamId + "/task/" + task.id)}>
                         <IonLabel>
                             {task.title}
@@ -61,7 +61,7 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs>; dreamId: string }> = ({ 
                     <IonLabel>Rewards</IonLabel>
                 </IonListHeader>
 
-                {dreamRewards.map((reward) => (
+                {rewards.map((reward) => (
                     <IonItem key={reward.id} onClick={() => history.push("/dream/" + dreamId + "/reward/" + reward.id)}>
                         <IonLabel>
                             {reward.title}
@@ -82,7 +82,7 @@ export const DreamEditScreen: React.FC = () => {
     const params = useParams<{ dreamId: string }>();
     const history = useHistory();
     const dream = useStore((state) => state.dreamSlice.dreams.find((dream) => dream.id === params.dreamId));
-    const [dreamId, setDreamId] = useState(dream?.id ?? nanoid());
+    const [dreamId] = useState(dream?.id ?? nanoid());
     const addDream = useStore((state) => state.dreamSlice.add);
     const updateDream = useStore((state) => state.dreamSlice.update);
     const removeDream = useStore((state) => state.dreamSlice.remove);
@@ -95,8 +95,6 @@ export const DreamEditScreen: React.FC = () => {
     });
 
     useEffect(() => {
-        setDreamId(dream?.id ?? nanoid());
-
         if (!dream) {
             // Add dream and if it would left empty, remove it on rendering the home screen
             addDream({ id: dreamId, title: "" });
@@ -117,6 +115,10 @@ export const DreamEditScreen: React.FC = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const onSubmit = (data: FormInputs) => {
+        history.goBack();
+    };
+
     const onRemove = () => {
         removeDream(dreamId);
         history.goBack();
@@ -127,7 +129,7 @@ export const DreamEditScreen: React.FC = () => {
             id="edit-dream"
             title="Dream Edit"
             form={<Form form={form} dreamId={dreamId} />}
-            fabSaveOnClick={() => history.goBack()}
+            fabSaveOnClick={form.handleSubmit(onSubmit)}
             fabRemoveOnClick={dream && onRemove}
         />
     );
