@@ -125,27 +125,43 @@ export const Navigation: React.FC = () => {
                 <Tabs />
             </Route>
 
-            <Route path="/tasks/add">
+            <Route exact path="/tasks/add">
                 <TaskEditScreen />
             </Route>
 
-            <Route path="/tasks/:taskId">
+            <Route exact path="/tasks/:taskId">
                 <TaskEditScreen />
             </Route>
 
-            <Route path="/dreams/add">
+            <Route exact path="/dreams/add">
                 <DreamEditScreen />
             </Route>
 
-            <Route path="/dreams/:dreamId">
+            <Route exact path="/dreams/:dreamId">
                 <DreamEditScreen />
             </Route>
 
-            <Route path="/rewards/add">
+            <Route exact path="/dreams/:dreamId/task">
+                <TaskEditScreen />
+            </Route>
+
+            <Route exact path="/dreams/:dreamId/task/:taskId">
+                <TaskEditScreen />
+            </Route>
+
+            <Route exact path="/dreams/:dreamId/reward">
                 <RewardEditScreen />
             </Route>
 
-            <Route path="/rewards/:rewardId">
+            <Route exact path="/dreams/:dreamId/reward/:rewardId">
+                <RewardEditScreen />
+            </Route>
+
+            <Route exact path="/rewards/add">
+                <RewardEditScreen />
+            </Route>
+
+            <Route exact path="/rewards/:rewardId">
                 <RewardEditScreen />
             </Route>
         </IonRouterOutlet>

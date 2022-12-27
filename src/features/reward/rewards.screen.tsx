@@ -9,29 +9,35 @@ const flexCenter = { display: "flex", alignItems: "center" };
 const RewardItem = ({ reward }: { reward: Reward }) => {
     const rewardToggle = useStore((state) => state.rewardSlice.toggle);
     const userBalance = useStore((state) => state.userSlice.balance);
-
     const rewardBuyable = reward.completed || userBalance >= reward?.price;
+
+    const onCheckboxChange = (e: { target: { checked: boolean } }) => {
+        if (reward.dreamId) {
+            e.target.checked = reward.completed;
+            return;
+        }
+
+        rewardToggle(reward.id);
+    };
 
     return (
         <IonItem routerLink={"/rewards/" + reward.id}>
-            {reward.dreamId ? (
-                <IonIcon icon={starOutline} slot="start" />
-            ) : (
-                <IonCheckbox
-                    slot="start"
-                    checked={reward.completed}
-                    disabled={!rewardBuyable}
-                    onClick={(e) => e.stopPropagation()}
-                    onIonChange={() => rewardToggle(reward.id)}
-                />
-            )}
+            <IonCheckbox
+                slot="start"
+                checked={reward.completed}
+                disabled={!rewardBuyable}
+                onClick={(e) => e.stopPropagation()}
+                onIonChange={onCheckboxChange}
+            />
 
             <IonLabel>
                 {reward.title}
                 {reward.description && <p>{reward.description}</p>}
             </IonLabel>
 
-            {!reward.dreamId && (
+            {reward.dreamId ? (
+                <IonIcon icon={starOutline} slot="end" />
+            ) : (
                 <IonLabel slot="end" style={flexCenter}>
                     {reward.price}
                     <IonIcon className="ion-margin-start" icon={ribbonOutline} />

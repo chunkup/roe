@@ -12,7 +12,7 @@ type FormInputs = {
     price: number;
 };
 
-const Form: React.FC<{ form: UseFormReturn<FormInputs> }> = ({ form }) => {
+const Form: React.FC<{ form: UseFormReturn<FormInputs>; dream: boolean }> = ({ form, dream }) => {
     const ionInvalidClass = (name: keyof FormInputs) => (form.formState.isSubmitted && form.getFieldState(name).error ? "ion-invalid" : "");
 
     return (
@@ -38,24 +38,26 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs> }> = ({ form }) => {
                 </IonItem>
             </IonList>
 
-            <IonList>
-                <IonListHeader>
-                    <IonLabel>Price</IonLabel>
-                </IonListHeader>
+            {!dream && (
+                <IonList>
+                    <IonListHeader>
+                        <IonLabel>Price</IonLabel>
+                    </IonListHeader>
 
-                <IonItem className={ionInvalidClass("price")}>
-                    <IonInput {...form.register("price", { required: true })} />
-                    <IonNote slot="error" color="danger">
-                        Required
-                    </IonNote>
-                </IonItem>
-            </IonList>
+                    <IonItem className={ionInvalidClass("price")}>
+                        <IonInput {...form.register("price", { required: true })} />
+                        <IonNote slot="error" color="danger">
+                            Required
+                        </IonNote>
+                    </IonItem>
+                </IonList>
+            )}
         </form>
     );
 };
 
 export const RewardEditScreen: React.FC = () => {
-    const params = useParams<{ rewardId: string }>();
+    const params = useParams<{ rewardId: string; dreamId: string }>();
     const history = useHistory();
     const form = useForm<FormInputs>();
     const reward = useStore((state) => state.rewardSlice.rewards.find((reward) => reward.id === params.rewardId));
@@ -73,12 +75,12 @@ export const RewardEditScreen: React.FC = () => {
 
     const onSubmit = (data: FormInputs) => {
         if (reward) {
-            updateReward(reward.id, { title: data.title, description: data.description, price: data.price });
+            updateReward(reward.id, { dreamId: reward.dreamId, title: data.title, description: data.description, price: data.price || 0 });
         } else {
-            addReward({ title: data.title, description: data.description, price: data.price });
+            addReward({ dreamId: params.dreamId, title: data.title, description: data.description, price: data.price || 0 });
         }
 
-        history.push("/tabs/rewards");
+        history.push(params.dreamId ? "/dreams/" + params.dreamId : "/tabs/rewards");
     };
 
     const onRemove = () => {
@@ -86,14 +88,14 @@ export const RewardEditScreen: React.FC = () => {
             removeReward(reward.id);
         }
 
-        history.push("/tabs/rewards");
+        history.push(params.dreamId ? "/dreams/" + params.dreamId : "/tabs/rewards");
     };
 
     return (
         <EditScreen
             id="edit-reward"
             title="Reward Edit"
-            form={<Form form={form} />}
+            form={<Form form={form} dream={!!(params.dreamId || reward?.dreamId)} />}
             fabSaveOnClick={form.handleSubmit(onSubmit)}
             fabRemoveOnClick={reward && onRemove}
         />

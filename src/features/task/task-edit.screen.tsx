@@ -181,7 +181,7 @@ const Form: React.FC<{ form: UseFormReturn<FormInputs, any>; minRepeatTimes: num
 };
 
 export const TaskEditScreen: React.FC = () => {
-    const params = useParams<{ taskId: string }>();
+    const params = useParams<{ taskId: string; dreamId: string }>();
     const history = useHistory();
     const form = useForm<FormInputs>();
     const task = useStore((state) => state.taskSlice.tasks.find((task) => task.id === params?.taskId));
@@ -210,6 +210,7 @@ export const TaskEditScreen: React.FC = () => {
             updateTask(task.id, {
                 ...data,
                 index: task.index,
+                dreamId: task.dreamId,
                 importance: data.importance,
                 date: date ? +date : undefined,
                 time: date && time ? +time : undefined,
@@ -219,12 +220,13 @@ export const TaskEditScreen: React.FC = () => {
             addTask({
                 ...data,
                 index: 0,
+                dreamId: params.dreamId,
                 date: date ? +date : undefined,
                 time: date && time ? +time : undefined,
             });
         }
 
-        history.push("/tabs/tasks");
+        history.push(params.dreamId ? "/dreams/" + params.dreamId : "/tabs/tasks");
     };
 
     const onRemove = () => {
@@ -232,7 +234,7 @@ export const TaskEditScreen: React.FC = () => {
             removeTask(task.id);
         }
 
-        history.push("/tabs/tasks");
+        history.push(params.dreamId ? "/dreams/" + params.dreamId : "/tabs/tasks");
     };
 
     return (

@@ -1,5 +1,4 @@
 import { Draft } from "immer";
-import { nanoid } from "nanoid";
 import { StateCreator } from "zustand";
 import { Mutators, Store } from "../../../store";
 import { importanceToPrice } from "../../task/store/task-price.enum";
@@ -13,14 +12,14 @@ export interface Dream {
     completionDate?: number;
 }
 
-export type DreamEditable = Omit<Dream, "id" | "completed" | "completionPercent">;
+export type DreamEditable = Omit<Dream, "completed" | "completionPercent">;
 
 export interface DreamStoreSlice {
     dreamSlice: {
         dreams: Dream[];
         add: (dreamEditable: DreamEditable) => void;
         remove: (dreamId: string) => void;
-        update: (dreamId: string, dreamEditable: DreamEditable) => void;
+        update: (dreamId: string, dreamEditable: Omit<DreamEditable, "id">) => void;
         tryComplete: (dreamId: string) => void;
     };
 }
@@ -45,6 +44,7 @@ export function tryCompleteDream(state: Draft<Store>, dreamId: string): void {
         }
     });
 
+    // TODO: Include task iterations
     dream.completionPercent = Math.floor((completedTasksWeight / tasksWeight) * 100);
 
     if (dream.completed === completed) {
@@ -64,16 +64,20 @@ export const createDreamStoreSlice: StateCreator<Store, Mutators, [], DreamStore
         add: (dreamEditable) =>
             set((state) => {
                 state.dreamSlice.dreams.push({
-                    id: nanoid(),
+                    id: dreamEditable.id,
                     title: dreamEditable.title,
                     description: dreamEditable.description,
-                    completed: true,
+                    completed: false,
                     completionPercent: 0,
                 });
             }),
 
         remove: (dreamId) =>
             set((state) => {
+                // TODO: Think about warning user before removing related tasks and rewards
+                state.taskSlice.tasks = state.taskSlice.tasks.filter((task) => task.dreamId !== dreamId);
+                state.rewardSlice.rewards = state.rewardSlice.rewards.filter((reward) => reward.dreamId !== dreamId);
+
                 state.dreamSlice.dreams = state.dreamSlice.dreams.filter((dream) => dream.id !== dreamId);
             }),
 
@@ -82,7 +86,8 @@ export const createDreamStoreSlice: StateCreator<Store, Mutators, [], DreamStore
                 const dream = state.dreamSlice.dreams.find((dream) => dream.id === dreamId);
 
                 if (!dream) {
-                    throw new Error(`Dream with id ${dreamId} not found`);
+                    console.warn(`Dream with id ${dreamId} not found`);
+                    return;
                 }
 
                 dream.title = dreamEditable.title;
